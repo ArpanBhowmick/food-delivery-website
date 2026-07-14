@@ -43,7 +43,7 @@ export const register = async (req: Request, res: Response) => {
       httpOnly: true,
       secure: false,
       sameSite: "lax",
-      maxAge: 7 * 24 * 60 * 60 * 1000,
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
     });
 
     // in production set secure: true and sameSite: "none" for cross-site cookies
@@ -107,7 +107,7 @@ export const login = async (req: Request, res: Response) => {
       httpOnly: true,
       secure: false,
       sameSite: "lax",
-      maxAge: 7 * 24 * 60 * 60 * 1000,
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
     });
 
     // in production set secure: true and sameSite: "none" for cross-site cookies

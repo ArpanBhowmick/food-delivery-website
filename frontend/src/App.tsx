@@ -10,6 +10,7 @@ import UnAuthorized from "./pages/common/UnAuthorized";
 import UserDashboard from "./pages/user/UserDashboard";
 import OwnerDashboard from "./pages/owner/OwnerDashboard";
 import DeliveryBoy from "./pages/deliveryBoy/DeliveryBoy";
+import ForgotPassword from "./pages/auth/ForgottonPassword";
 
 const App = () => {
   return (
@@ -19,6 +20,7 @@ const App = () => {
         <Route element={<PublicRoute />}>
           <Route path="/signup" element={<SignUpPage />} />
           <Route path="/signin" element={<SignIn />} />
+          <Route path="/forgot-password" element={<ForgotPassword/>}/>
         </Route>
 
         <Route path="/unauthorized" element={<UnAuthorized />} />

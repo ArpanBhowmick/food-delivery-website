@@ -8,7 +8,7 @@ export const generateAccessToken = (user: IUser) => {
       // role:
     },
     process.env.ACCESS_SECRET!,
-    { expiresIn: "15s" },
+    { expiresIn: "15m" },
   );
 };
 
@@ -18,6 +18,6 @@ export const generateRefreshToken = (user: IUser) => {
       id: user._id,
     },
     process.env.REFRESH_SECRET!,
-    { expiresIn: "30s" },
+    { expiresIn: "7d" },
   );
 };

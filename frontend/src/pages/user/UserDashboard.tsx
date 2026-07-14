@@ -1,8 +1,13 @@
 import React from 'react'
+import Navbar from './Navbar'
 
 const UserDashboard = () => {
   return (
-    <div>UserDashboard</div>
+
+    <div>
+      <Navbar />
+      UserDashboard
+      </div>
   )
 }
 

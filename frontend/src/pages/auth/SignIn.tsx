@@ -126,12 +126,12 @@ export default function SignIn() {
                   Remember me
                 </label>
               </div>
-              <a
-                href="#"
+              <Link
+                to="/forgot-password"
                 className="text-sm font-semibold text-[#7032f9] hover:underline cursor-pointer"
               >
                 Forgot password?
-              </a>
+              </Link>
             </div>
 
             {/* Submit Button */}
