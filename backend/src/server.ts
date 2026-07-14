@@ -4,6 +4,7 @@ import connectDB from "./config/db.js";
 import cookieParser from "cookie-parser";
 import { corsOptions } from "./config/corsOptions.js";
 import cors from "cors";
+import userRouter from "./routes/user.route.js";
 import authRouter from "./routes/auth.route.js";
 
 dotenv.config();
@@ -19,7 +20,11 @@ app.use(express.json());
 app.use(cookieParser());
 
 
+// auth routes
 app.use("/api/auth", authRouter);
+
+// user routes
+app.use("/api/user", userRouter)
 
 
 connectDB();

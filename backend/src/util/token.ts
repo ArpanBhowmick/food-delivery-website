@@ -7,17 +7,17 @@ export const generateAccessToken = (user: IUser) => {
       id: user._id,
       // role:
     },
-    process.env.JWT_SECRET!,
-    { expiresIn: "10m" },
+    process.env.ACCESS_SECRET!,
+    { expiresIn: "15s" },
   );
 };
 
-export const generateRefreshToken = async (user: IUser) => {
+export const generateRefreshToken = (user: IUser) => {
   return jwt.sign(
     {
       id: user._id,
     },
-    process.env.JWT_SECRET!,
-    { expiresIn: "1h" },
+    process.env.REFRESH_SECRET!,
+    { expiresIn: "30s" },
   );
 };

@@ -20,7 +20,7 @@ export const register = async (req: Request, res: Response) => {
         .json({ message: "Mobile number must be at least 10 characters" });
     }
 
-    if (password.length < 6) {
+    if (password.length < 8) {
       return res
         .status(400)
         .json({ message: "Password must be at least 6 characters" });
@@ -48,7 +48,7 @@ export const register = async (req: Request, res: Response) => {
 
     // in production set secure: true and sameSite: "none" for cross-site cookies
 
-    return res.status(201).json({
+    return res.status(200).json({
       success: true,
       message: "User Registered Successfully",
       accessToken,
@@ -61,8 +61,11 @@ export const register = async (req: Request, res: Response) => {
       },
     });
   } catch (error) {
+    console.error(error);
+
     return res.status(500).json({
-      message: `sign up failed ${error}`,
+      success: false,
+      message: "Registration failed",
     });
   }
 };
@@ -109,9 +112,9 @@ export const login = async (req: Request, res: Response) => {
 
     // in production set secure: true and sameSite: "none" for cross-site cookies
 
-    return res.status(201).json({
+    return res.status(200).json({
       success: true,
-      message: "User Registered Successfully",
+      message: "User Logged In Successfully",
       accessToken,
       user: {
         id: user._id,
@@ -132,7 +135,7 @@ export const login = async (req: Request, res: Response) => {
 
 // refresh token controller
 
-const refreshAccessToken = async (req: Request, res: Response) => {
+export const refreshAccessToken = async (req: Request, res: Response) => {
   try {
     const { refreshToken } = req.cookies;
 
@@ -168,39 +171,32 @@ const refreshAccessToken = async (req: Request, res: Response) => {
       },
     });
   } catch (error) {
+    console.log(error);
     return res.status(403).json({
       message: "Invalid or expired refresh token",
-      error,
     });
   }
 };
 
-
-
-// logOut controller 
+// logOut controller
 
 export const logOut = async (req: Request, res: Response) => {
   try {
-    
-    res.clearCookie("refreshToken",{
+    res.clearCookie("refreshToken", {
       httpOnly: true,
       secure: false,
       sameSite: "lax",
-    })
+    });
 
     // this is for locally testing in production set secure: true and sameSite: "none" for cross-site cookies
 
     return res.status(200).json({
-      message: "Logged out successfully"
-    })
-
+      message: "Logged out successfully",
+    });
   } catch (error) {
     return res.status(500).json({
-      message: "Error logging out", error
-    })
+      message: "Error logging out",
+      error,
+    });
   }
-}
-
-
-
-
+};

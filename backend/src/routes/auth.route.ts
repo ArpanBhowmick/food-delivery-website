@@ -1,23 +1,22 @@
 import express from "express"
-import { login, logOut, register } from "../controllers/auth.Controller.js"
-import { generateRefreshToken } from "../util/token.js"
+import { login, logOut, refreshAccessToken, register } from "../controllers/auth.Controller.js"
 
 
-const router = express.Router()
+const authRouter = express.Router()
 
 
 // register route
-router.post("/register", register)
+authRouter.post("/register", register)
 
 // login route
-router.post("/login", login)
+authRouter.post("/login", login)
 
 // refresh token route
-router.post("/refreshToken", generateRefreshToken)
+authRouter.post("/refreshToken", refreshAccessToken)
 
 // logout route
-router.post("/logOut", logOut)
+authRouter.post("/logOut", logOut)
 
 
 
-export default router
+export default authRouter
