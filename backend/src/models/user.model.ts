@@ -1,12 +1,23 @@
 import mongoose, { Document } from "mongoose";
 
-  export interface IUser extends Document{
+interface ILocation {
+  address: string;
+  city: string;
+  state: string;
+  country: string;
+  pincode: string;
+  latitude: number;
+  longitude: number;
+}
+
+export interface IUser extends Document {
   name: string;
   email: string;
   mobile: string;
   role: "user" | "owner" | "deliveryBoy";
   password?: string;
   provider: "local" | "google";
+  defaultAddress?: ILocation;
 }
 
 const userSchema = new mongoose.Schema<IUser>(
@@ -44,6 +55,37 @@ const userSchema = new mongoose.Schema<IUser>(
       type: String,
       enum: ["local", "google"],
       default: "local",
+    },
+
+    defaultAddress: {
+      address: {
+        type: String,
+        default: "",
+      },
+      city: {
+        type: String,
+        default: "",
+      },
+      state: {
+        type: String,
+        default: "",
+      },
+      country: {
+        type: String,
+        default: "",
+      },
+      pincode: {
+        type: String,
+        default: "",
+      },
+      latitude: {
+        type: Number,
+        default: null,
+      },
+      longitude: {
+        type: Number,
+        default: null,
+      },
     },
   },
   { timestamps: true },

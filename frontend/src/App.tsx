@@ -11,16 +11,27 @@ import UserDashboard from "./pages/user/UserDashboard";
 import OwnerDashboard from "./pages/owner/OwnerDashboard";
 import DeliveryBoy from "./pages/deliveryBoy/DeliveryBoy";
 import ForgotPassword from "./pages/auth/ForgottonPassword";
+import { UserLayout } from "./pages/user/UserLayout";
 
 const App = () => {
   return (
     <Routes>
       {/* public routes */}
       <Route element={<PersistLogin />}>
+
+      <Route element={<UserLayout />}>
+          
+            {/* <Route element={<RequireRole allowedRoles={["user"]} />}> */}
+
+              <Route path="/" element={<UserDashboard />} />
+            {/* </Route> */}
+
+          </Route>
+
         <Route element={<PublicRoute />}>
           <Route path="/signup" element={<SignUpPage />} />
           <Route path="/signin" element={<SignIn />} />
-          <Route path="/forgot-password" element={<ForgotPassword/>}/>
+          <Route path="/forgot-password" element={<ForgotPassword />} />
         </Route>
 
         <Route path="/unauthorized" element={<UnAuthorized />} />
@@ -29,17 +40,25 @@ const App = () => {
 
         <Route element={<RequireAuth />}>
           {/* user routes */}
-          <Route element={<RequireRole allowedRoles={["user"]} />}>
-            <Route path="/" element={<UserDashboard />} />
-          </Route>
+          {/* <Route element={<UserLayout />}>
 
+            <Route element={<RequireRole allowedRoles={["user"]} />}>
+              <Route path="/" element={<UserDashboard />} />
+            </Route>
+
+          </Route> */}
+
+          {/* owner route */}
           <Route element={<RequireRole allowedRoles={["owner"]} />}>
             <Route path="/owner" element={<OwnerDashboard />} />
           </Route>
 
+          {/* delivery boy route */}
+
           <Route element={<RequireRole allowedRoles={["deliveryBoy"]} />}>
             <Route path="/delivery" element={<DeliveryBoy />} />
           </Route>
+
         </Route>
 
         {/* 404 Page */}

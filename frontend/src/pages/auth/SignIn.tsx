@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 // import signinImage from "../assets/signin-image.png";
-import signinImage from "../../assets/signin-image.png"
+import signinImage from "../../assets/signin-image.png";
 import { Link, useNavigate } from "react-router-dom";
 import { loginSchema, type LoginFormData } from "@/schema/auth.schema";
 import { api } from "@/api/axios";
@@ -19,6 +19,7 @@ import axios from "axios";
 import type { AppDispatch } from "@/store/store";
 import { roleHome } from "@/utils/roleRoutes";
 import type { AuthResponse } from "@/types/auth.types";
+import { setLocation } from "@/store/locationSlice";
 
 export default function SignIn() {
   const [showPassword, setShowPassword] = useState(false);
@@ -46,6 +47,10 @@ export default function SignIn() {
           accessToken: response.data.accessToken,
         }),
       );
+
+      if (response.data.user.defaultAddress) {
+        dispatch(setLocation(response.data.user.defaultAddress));
+      }
 
       navigate(roleHome[response.data.user.role]);
     } catch (error) {
