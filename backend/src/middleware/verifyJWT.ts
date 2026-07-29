@@ -1,4 +1,4 @@
-import type { NextFunction, Request, Response } from "express";
+import type { NextFunction, Response } from "express";
 import jwt, { type JwtPayload } from "jsonwebtoken";
 import type { AuthRequest } from "../types/types.js";
 

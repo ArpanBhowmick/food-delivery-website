@@ -17,8 +17,7 @@ export default function UserNavbar() {
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   const user = useSelector((state: RootState) => state.auth.user);
-  const location = useSelector((state: RootState) => state.location
-);
+  const location = useSelector((state: RootState) => state.location);
 
   const logOut = useLogout();
   const getCurrentLocation = useLocation();
@@ -40,9 +39,6 @@ export default function UserNavbar() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [dropdownOpen]);
 
-
- 
-  
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border bg-background">
       <div className="flex h-20 items-center justify-between px-4 md:px-8">
@@ -54,8 +50,21 @@ export default function UserNavbar() {
             </span>
           </a>
 
-          <button className="hidden md:flex items-center gap-1.5 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors cursor-pointer" onClick={() => setLocationOpen(true)}>
-            {location.address || "Select Location"}
+          <button
+            className="hidden cursor-pointer items-center gap-1 md:flex"
+            onClick={() => setLocationOpen(true)}
+          >
+            <div className="flex flex-col items-start">
+              <span className="text-sm font-semibold text-foreground">
+                Delivery in 20 minutes
+              </span>
+
+              <span className="max-w-[220px] truncate text-xs text-muted-foreground">
+                {location.address || "Select Location"}
+              </span>
+              
+            </div>
+
             <ChevronDown className="h-4 w-4" />
           </button>
         </div>
@@ -99,7 +108,7 @@ export default function UserNavbar() {
             <div className="relative">
               <IoCartOutline className="h-6 w-6 stroke-[1.5]" />
               <span className="absolute -top-2 -right-2 flex items-center justify-center w-4 h-4 text-[10px] font-bold text-white bg-[#7E22CE] rounded-full">
-                1
+                0
               </span>
             </div>
             {/* <span className="text-[11px] font-medium leading-none">Cart</span> */}
@@ -186,73 +195,77 @@ export default function UserNavbar() {
       )}
 
       {/* Location modal */}
-{locationOpen && (
-  <div>
-    {/* Background Overlay - Added a subtle blur for a premium feel */}
-    <div className="fixed inset-0 z-50 bg-black/40 " />
-    
-    {/* Modal Wrapper */}
-    <div 
-      className="fixed inset-0 z-50 flex items-center justify-center p-4" 
-      onClick={() => setLocationOpen(false)}
-    >
-      {/* Modal Content - Increased border radius to rounded-3xl for the app look */}
-      <div 
-        className="relative w-full max-w-[340px] rounded-[24px] border border-border bg-background p-6 shadow-2xl" 
-        onClick={(e) => e.stopPropagation()}
-      >
-        {/* Absolute Close Button */}
-        <button 
-          className="absolute right-4 top-4 cursor-pointer rounded-full p-1 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground" 
-          onClick={() => setLocationOpen(false)}
-        >
-          <X className="h-5 w-5 stroke-[2]" />
-        </button>
+      {locationOpen && (
+        <div>
+          {/* Background Overlay - Added a subtle blur for a premium feel */}
+          <div className="fixed inset-0 z-50 bg-black/40 " />
 
-        {/* Header Section: Icon & Title */}
-        <div className="mt-4 flex flex-col items-center text-center mb-8">
-          <div className="mb-4 flex flex-col items-center justify-center">
-            <GrMapLocation  className="h-10 w-10 text-[#7e22ce]" strokeWidth={2} />
-          </div>
-          <h2 className="text-xl font-bold leading-tight text-foreground">
-            Choose your<br />delivery address
-          </h2>
-        </div>
-
-        {/* Action Section */}
-        <div className="flex flex-col gap-3">
-          {/* Use Current Location Button - Rounded full, text left, icon right */}
-          <button className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-full bg-[#7e22ce] py-3.5 text-[15px] font-semibold text-white transition-all hover:brightness-110 active:scale-[0.98]" 
-
-          onClick={async () => {
-    const success = await getCurrentLocation();
-
-    if (success) {
-      setLocationOpen(false);
-    }
-  }}
-          
+          {/* Modal Wrapper */}
+          <div
+            className="fixed inset-0 z-50 flex items-center justify-center p-4"
+            onClick={() => setLocationOpen(false)}
           >
-            Use Current Location
-            <Navigation className="h-4 w-4" fill="currentColor" />
-          </button>
+            {/* Modal Content - Increased border radius to rounded-3xl for the app look */}
+            <div
+              className="relative w-full max-w-[340px] rounded-[24px] border border-border bg-background p-6 shadow-2xl"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Absolute Close Button */}
+              <button
+                className="absolute right-4 top-4 cursor-pointer rounded-full p-1 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                onClick={() => setLocationOpen(false)}
+              >
+                <X className="h-5 w-5 stroke-[2]" />
+              </button>
 
-          {/* Search Input - Rounded full to match */}
-          <div className="relative">
-            <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 text-muted-foreground">
-              <Search className="h-4 w-4" />
+              {/* Header Section: Icon & Title */}
+              <div className="mt-4 flex flex-col items-center text-center mb-8">
+                <div className="mb-4 flex flex-col items-center justify-center">
+                  <GrMapLocation
+                    className="h-10 w-10 text-[#7e22ce]"
+                    strokeWidth={2}
+                  />
+                </div>
+                <h2 className="text-xl font-bold leading-tight text-foreground">
+                  Choose your
+                  <br />
+                  delivery address
+                </h2>
+              </div>
+
+              {/* Action Section */}
+              <div className="flex flex-col gap-3">
+                {/* Use Current Location Button - Rounded full, text left, icon right */}
+                <button
+                  className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-full bg-[#7e22ce] py-3.5 text-[15px] font-semibold text-white transition-all hover:brightness-110 active:scale-[0.98]"
+                  onClick={async () => {
+                    const success = await getCurrentLocation();
+
+                    if (success) {
+                      setLocationOpen(false);
+                    }
+                  }}
+                >
+                  Use Current Location
+                  <Navigation className="h-4 w-4" fill="currentColor" />
+                </button>
+
+                {/* Search Input - Rounded full to match */}
+                <div className="relative">
+                  <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 text-muted-foreground">
+                    <Search className="h-4 w-4" />
+                  </div>
+                  <input
+                    type="text"
+                    placeholder="Search your address"
+                    className="flex h-12.5 w-full rounded-full border border-[#aaa] bg-transparent px-3 py-1 pl-11 pr-4 text-sm text-foreground shadow-md  transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[#7e22ce]"
+                  />
+                </div>
+              </div>
             </div>
-            <input
-              type="text"
-              placeholder="Search your address"
-              className="flex h-12.5 w-full rounded-full border border-[#aaa] bg-transparent px-3 py-1 pl-11 pr-4 text-sm text-foreground shadow-md  transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[#7e22ce]"
-            />
           </div>
         </div>
-      </div>
-    </div>
-  </div>
-)}
+      )}
     </header>
   );
 }

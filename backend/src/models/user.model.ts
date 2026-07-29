@@ -6,8 +6,8 @@ interface ILocation {
   state: string;
   country: string;
   pincode: string;
-  latitude: number;
-  longitude: number;
+  latitude: number | null;
+  longitude: number | null;
 }
 
 export interface IUser extends Document {

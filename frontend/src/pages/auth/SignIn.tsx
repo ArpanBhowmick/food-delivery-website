@@ -53,6 +53,7 @@ export default function SignIn() {
       }
 
       navigate(roleHome[response.data.user.role]);
+      
     } catch (error) {
       if (axios.isAxiosError(error)) {
         console.log(error.response?.data);
