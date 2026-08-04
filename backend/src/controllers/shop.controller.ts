@@ -25,6 +25,18 @@ export const createShop = async (req: AuthRequest, res: Response) => {
       });
     }
 
+    const existingShop = await Shop.findOne({
+      owner: req.userId,
+      name: name.trim(),
+      address: address.trim(),
+    });
+
+    if (existingShop) {
+      return res.status(409).json({
+        message: "A restaurant with the same name and address already exists.",
+      });
+    }
+
     // upload image to cloudinary
 
     let image;
@@ -55,6 +67,7 @@ export const createShop = async (req: AuthRequest, res: Response) => {
       shop,
     });
   } catch (error) {
+    console.log(error);
     return res
       .status(500)
       .json({ success: false, message: `Internal Server Error ${error}` });
@@ -128,3 +141,56 @@ export const editShop = async (req: AuthRequest, res: Response) => {
     });
   }
 };
+
+
+
+
+
+// get all owner shops
+export const getOwnerShops = async (req: AuthRequest, res: Response) => {
+
+  try {
+    
+    const ownerId = req.userId;
+
+    if (!ownerId) {
+      return res.status(401).json({
+        success: false,
+        message: "Unauthorized in shop update as user id is not the owner",
+      })
+    }
+
+    const shops = await Shop.find({owner: ownerId});
+
+   if (shops.length === 0) {
+  return res.status(200).json({
+    success: true,
+    message: "No shops found",
+    shops: [],
+  });
+}
+
+    return res.status(200).json({
+      success: true,
+      message: "Shops found",
+      shops
+    })
+
+
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({
+      success: false,
+      message: "get shops failed",
+    })
+    
+  }
+
+}
+
+
+
+
+
+
+

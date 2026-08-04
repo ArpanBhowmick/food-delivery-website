@@ -8,8 +8,10 @@ import userRouter from "./routes/user.route.js";
 import authRouter from "./routes/auth.route.js";
 import shopRouter from "./routes/shop.route.js";
 import itemRouter from "./routes/item.route.js";
+import { configureCloudinary } from "./config/cloudinary.js";
 
 dotenv.config();
+configureCloudinary();
 
 const app = express();
 

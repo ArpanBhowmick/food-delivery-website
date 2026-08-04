@@ -12,21 +12,20 @@ import OwnerDashboard from "./pages/owner/OwnerDashboard";
 import DeliveryBoy from "./pages/deliveryBoy/DeliveryBoy";
 import ForgotPassword from "./pages/auth/ForgottonPassword";
 import { UserLayout } from "./pages/user/UserLayout";
+import OwnerLayout from "./pages/owner/OwnerLayout";
+import CreateRestaurant from "./pages/owner/CreateRestaurent";
 
 const App = () => {
   return (
     <Routes>
       {/* public routes */}
       <Route element={<PersistLogin />}>
+        <Route element={<UserLayout />}>
+          {/* <Route element={<RequireRole allowedRoles={["user"]} />}> */}
 
-      <Route element={<UserLayout />}>
-          
-            {/* <Route element={<RequireRole allowedRoles={["user"]} />}> */}
-
-              <Route path="/" element={<UserDashboard />} />
-            {/* </Route> */}
-
-          </Route>
+          <Route path="/" element={<UserDashboard />} />
+          {/* </Route> */}
+        </Route>
 
         <Route element={<PublicRoute />}>
           <Route path="/signup" element={<SignUpPage />} />
@@ -48,9 +47,16 @@ const App = () => {
 
           </Route> */}
 
-          {/* owner route */}
-          <Route element={<RequireRole allowedRoles={["owner"]} />}>
-            <Route path="/owner" element={<OwnerDashboard />} />
+          <Route element={<OwnerLayout />}>
+            {/* owner route */}
+            <Route element={<RequireRole allowedRoles={["owner"]} />}>
+              <Route path="/owner" element={<OwnerDashboard />} />
+
+              <Route path="/owner/shop/create" element={<CreateRestaurant />} />
+
+            </Route>
+
+            
           </Route>
 
           {/* delivery boy route */}
@@ -58,7 +64,6 @@ const App = () => {
           <Route element={<RequireRole allowedRoles={["deliveryBoy"]} />}>
             <Route path="/delivery" element={<DeliveryBoy />} />
           </Route>
-
         </Route>
 
         {/* 404 Page */}

@@ -104,9 +104,9 @@ export default function UserNavbar() {
             My Orders
           </button>
 
-          <button className="flex flex-col items-center justify-center gap-1 text-[#080808] hover:opacity-80 transition-opacity cursor-pointer">
+          <button className="flex flex-col items-center justify-center gap-1 text-gray-600 hover:text-[#640a99] transition-colors cursor-pointer">
             <div className="relative">
-              <IoCartOutline className="h-6 w-6 stroke-[1.5]" />
+              <IoCartOutline className="text-[26px] stroke-[1.5]" />
               <span className="absolute -top-2 -right-2 flex items-center justify-center w-4 h-4 text-[10px] font-bold text-white bg-[#7E22CE] rounded-full">
                 0
               </span>
