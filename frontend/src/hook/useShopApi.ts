@@ -22,9 +22,17 @@ export const useShopApi = () => {
     return response.data;
   }
 
+
+  // get shop by id
+  const getShopById = async (shopId: string) => {
+    const response  = await axiosPrivate.get(`/shop/${shopId}`)
+    return response.data;
+  }
+
   return {
     createShop,
     editShop,
     getOwnerShops,
+    getShopById
   };
 };

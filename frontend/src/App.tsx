@@ -14,6 +14,8 @@ import ForgotPassword from "./pages/auth/ForgottonPassword";
 import { UserLayout } from "./pages/user/UserLayout";
 import OwnerLayout from "./pages/owner/OwnerLayout";
 import CreateRestaurant from "./pages/owner/CreateRestaurent";
+import EditRestaurant from "./pages/owner/EditRestaurent";
+import ShopDetails from "./components/owner/ShopDetails";
 
 const App = () => {
   return (
@@ -53,10 +55,13 @@ const App = () => {
               <Route path="/owner" element={<OwnerDashboard />} />
 
               <Route path="/owner/shop/create" element={<CreateRestaurant />} />
+              <Route path="/owner/shop/edit/:shopId" element={<EditRestaurant />} />
+              <Route path="/owner/shop/:shopId" element={<ShopDetails />} />
 
+                
+              
+                
             </Route>
-
-            
           </Route>
 
           {/* delivery boy route */}

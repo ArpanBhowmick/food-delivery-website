@@ -1,83 +1,89 @@
+
+
 import type { IShop } from "@/types/shop.types";
-import { MapPin, Store } from "lucide-react";
+import { Eye, PenLine, Star, Trash2 } from "lucide-react";
 import { Link } from "react-router-dom";
+
+
 
 interface ShopCardProps {
   shop: IShop;
 }
 
+const status = "Active";
+const rating = 4.8;
+const revenue = "$24.5k";
+const orders = "1,120";
+const cuisine = "Italian";
 const ShopCard = ({ shop }: ShopCardProps) => {
   return (
-    <div className="bg-white rounded-xl border border-slate-300 overflow-hidden shadow-sm flex flex-col">
-      {/* Card Header / Image Area */}
-      <div className="h-32 relative border-b border-slate-100 overflow-hidden">
-        {shop.image?.url ? (
-          <img
-            src={shop.image.url}
-            alt={shop.name}
-            className="w-full h-full object-cover"
-          />
-        ) : (
-          <div className="w-full h-full bg-purple-100/50 flex items-center justify-center">
-            <Store className="w-12 h-12 text-purple-400" />
-          </div>
-        )}
-
-        {/* Later */}
-        {/* {shop.isPublished ? null : (
-          <span className="absolute top-3 right-3 bg-slate-200/80 text-slate-700 text-xs font-semibold px-2.5 py-1 rounded-md">
-            Draft
-          </span>
-        )} */}
+    
+    <div className="bg-white border border-gray-300 rounded-xl overflow-hidden shadow-sm flex flex-col">
+      {/* Image Section */}
+      <div className="relative h-48">
+        <img
+          src={shop.image.url}
+          alt={shop.name}
+          className="w-full h-full object-cover"
+        />
+        <span
+          className={`absolute top-3 right-3 px-2 py-1 rounded text-xs font-semibold ${
+            status === "Active"
+              ? "bg-[#c6f6d5] text-[#22543d]"
+              : "bg-[#fed7d7] text-[#822727]"
+          }`}
+        >
+          {status}
+        </span>
       </div>
 
       {/* Card Body */}
-      <div className="p-5 flex-1 flex flex-col">
-        <h3
-          className="text-base font-bold text-slate-900 mb-3 truncate"
-          title={shop.name}
-        >
-          {shop.name}
-        </h3>
-
-        <div className="space-y-1.5 mb-4 flex-1">
-          <div className="flex items-start gap-2 text-slate-600 text-xs">
-            <MapPin className="w-3.5 h-3.5 text-[#581c87] shrink-0 mt-0.5" />
-
-            <div className="leading-tight">
-              <p>{shop.address}</p>
-              <p>
-                {shop.city}, {shop.state}
-              </p>
-            </div>
-          </div>
-        </div>
-
-        <div className="mb-5">
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-green-50 text-green-700 text-xs font-medium border border-green-100">
-            <div className="w-1.5 h-1.5 rounded-full bg-green-500"></div>
-            Published
+      <div className="p-4 flex-1">
+        <div className="flex justify-between items-start mb-1">
+          <h3 className="text-lg font-bold">{shop.name}</h3>
+          <span
+            className={`px-2 py-0.5 rounded text-xs font-medium ${
+              status === "Active"
+                ? "bg-[#c6f6d5] text-[#22543d]"
+                : "bg-[#fed7d7] text-[#822727]"
+            }`}
+          >
+            {status}
           </span>
         </div>
 
-        {/* Card Actions */}
-        <div className="grid grid-cols-2 gap-2 mt-auto">
-          <Link
-            to={`/owner/shop/${shop._id}/edit`}
-            className="px-3 py-2 text-xs font-semibold text-center text-slate-700 border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors"
-          >
-            Edit Details
-          </Link>
+        <div className="text-sm text-gray-800 mb-4">
+          <p>{shop.address}</p>
+          <p>Cuisine: {cuisine}</p>
+        </div>
 
-          <Link
-            to={`/owner/shop/${shop._id}`}
-            className="px-3 py-2 text-xs font-semibold text-center text-white bg-[#581c87] rounded-lg hover:bg-[#4c1775] transition-colors truncate"
-          >
-            View Shop
-          </Link>
+        <div className="flex flex-wrap items-center text-xs sm:text-sm font-medium gap-y-1">
+          <span>{rating}</span>
+          <Star
+            size={14}
+            className="text-yellow-400 fill-yellow-400 ml-1 mr-2 shrink-0"
+          />
+          <span className="text-gray-300 mx-1">|</span>
+          <span className="mx-1">{revenue} Revenue</span>
+          <span className="text-gray-300 mx-1">|</span>
+          <span className="ml-1">{orders} Orders</span>
         </div>
       </div>
+
+      {/* Card Actions (Footer) */}
+      <div className="grid grid-cols-3 border-t border-gray-300">
+        <Link to={`/owner/shop/${shop._id}`} className="py-3 flex justify-center items-center text-slate-700 hover:bg-slate-50 border-r border-gray-300 transition-colors cursor-pointer">
+          <Eye size={18} />
+        </Link>
+        <Link to={`/owner/shop/edit/${shop._id}`} className="py-3 flex justify-center items-center text-slate-700 hover:bg-slate-50 border-r border-gray-300 transition-colors cursor-pointer">
+          <PenLine size={18} />
+        </Link>
+        <button className="py-3 flex justify-center items-center text-red-500 hover:bg-red-50 hover:text-red-600 border-r border-gray-300 transition-colors cursor-pointer">
+          <Trash2 size={18} />
+        </button>
+      </div>
     </div>
+    
   );
 };
 

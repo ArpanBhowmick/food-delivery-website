@@ -1,132 +1,9 @@
-import {
-  ArrowLeft,
-  Store,
-  UploadCloud,
-  MapPin,
-  Building2,
-  CheckCircle2,
-  Image as ImageIcon,
-  Info,
-} from "lucide-react";
-import prePreview from "../../assets/pre-preview2.png";
-import { useForm } from "react-hook-form";
-import {
-  createRestaurantSchema,
-  type CreateRestaurantForm,
-} from "@/schema/restaurantSchema";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useEffect, useRef, useState } from "react";
-import { states, cities } from "@/data/locations";
-// import TipsCard from "@/components/owner/TipsCard";
-import { useShopApi } from "@/hook/useShopApi";
-import axios from "axios";
-import { Link, useNavigate } from "react-router-dom";
-import TipsCard from "@/components/owner/TipsCard";
+import { Store } from 'lucide-react';
+import React from 'react'
+import { Link } from 'react-router-dom';
 
-const CreateRestaurant = () => {
-
-  const navigate = useNavigate();
-
-  const { createShop } = useShopApi();
-
-
-  const [previewUrl, setPreviewUrl] = useState(prePreview);
-
-  const {
-    register,
-    handleSubmit,
-    setValue,
-    watch,
-    reset,
-    formState: { errors },
-  } = useForm<CreateRestaurantForm>({
-    resolver: zodResolver(createRestaurantSchema),
-  });
-
-  // Watch form fields for live preview
-  const name = watch("name");
-  const city = watch("city");
-  const state = watch("state");
-  const address = watch("address");
-  const image = watch("image");
-
-  // console.log(image);
-
-  // Reference to the hidden file input
-  // Used to open the file picker programmatically
-  const fileInputRef = useRef<HTMLInputElement>(null);
-
-  // Handle restaurant image selection
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-
-    if (!file) return;
-
-    setValue("image", file, {
-      shouldValidate: true,
-    });
-  };
-
-  // Update image preview whenever
-  // the selected image changes
-  useEffect(() => {
-    if (!image) {
-      setPreviewUrl(prePreview);
-      return;
-    }
-
-    const objectUrl = URL.createObjectURL(image);
-
-    setPreviewUrl(objectUrl);
-
-    return () => {
-      URL.revokeObjectURL(objectUrl);
-    };
-  }, [image]);
-
-  // Reset city whenever the state changes
-  useEffect(() => {
-    setValue("city", "");
-  }, [state, setValue]);
-
-  // TODO:
-  // This works because the form currently contains only strings and File.
-  // If nested objects or arrays are added later, update the FormData conversion logic.
-  // Handle form submission
-
-  const onSubmit = async (data: CreateRestaurantForm) => {
-
-    try {
-      
- const formData = new FormData();
-
-    Object.entries(data).forEach(([key, value]) => {
-      if (value !== undefined && value !== null) {
-        formData.append(key, value);
-      }
-    });
-
-    await createShop(formData);
-
-    reset();
-    setPreviewUrl(prePreview);
-     navigate("/owner");
-
-    } catch (error) {
-       if (axios.isAxiosError(error)) {
-    console.log(error.response?.status);
-    console.log(error.response?.data.message);
-  }
-    }
-   
-  };
-
-  const handleCancel = () => {
-    reset();
-    setPreviewUrl(prePreview);
-  };
-
-  return (
+const AddItem = () => {
+ return (
     <div className="min-h-screen bg-[#f8f9fc] p-6 font-sans text-slate-800">
       <div className="max-w-7xl mx-auto">
         {/* Back Link */}
@@ -415,14 +292,11 @@ const CreateRestaurant = () => {
               </div>
             </div>
 
-            <TipsCard />
           </div>
         </div>
       </div>
     </div>
   );
-};
+}
 
-export default CreateRestaurant;
-
-// this component is re rendering with every key strock in teh form inputs
+export default AddItem

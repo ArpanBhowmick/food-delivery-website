@@ -142,55 +142,75 @@ export const editShop = async (req: AuthRequest, res: Response) => {
   }
 };
 
-
-
-
-
 // get all owner shops
 export const getOwnerShops = async (req: AuthRequest, res: Response) => {
-
   try {
-    
     const ownerId = req.userId;
 
     if (!ownerId) {
       return res.status(401).json({
         success: false,
         message: "Unauthorized in shop update as user id is not the owner",
-      })
+      });
     }
 
-    const shops = await Shop.find({owner: ownerId});
+    const shops = await Shop.find({ owner: ownerId });
 
-   if (shops.length === 0) {
-  return res.status(200).json({
-    success: true,
-    message: "No shops found",
-    shops: [],
-  });
-}
+    if (shops.length === 0) {
+      return res.status(200).json({
+        success: true,
+        message: "No shops found",
+        shops: [],
+      });
+    }
 
     return res.status(200).json({
       success: true,
       message: "Shops found",
-      shops
-    })
-
-
+      shops,
+    });
   } catch (error) {
     console.log(error);
     return res.status(500).json({
       success: false,
       message: "get shops failed",
-    })
-    
+    });
   }
+};
 
-}
+// get shop by id
 
+export const getShopById = async (req: AuthRequest, res: Response) => {
+  try {
+    const { shopId } = req.params;
 
+    const shop = await Shop.findById(shopId);
 
+    if (!shop) {
+      return res.status(400).json({
+        success: false,
+        message: "Shop not found",
+      });
+    }
 
+    // Verify the logged-in owner owns this shop
+    if (shop.owner.toString() !== req.userId) {
+      return res.status(403).json({
+        success: false,
+        message: "You are not authorized to access this shop",
+      });
+    }
 
+    return res.status(200).json({
+      success: true,
+      shop,
+    });
+  } catch (error) {
+    console.error(error);
 
-
+    return res.status(500).json({
+      success: false,
+      message: "Failed to fetch shop",
+    });
+  }
+};
