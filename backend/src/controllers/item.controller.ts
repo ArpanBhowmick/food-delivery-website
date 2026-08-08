@@ -75,7 +75,7 @@ export const addItem = async (req: AuthRequest, res: Response) => {
   }
 };
 
-// eidt/update item
+// edit/update item
 export const editItem = async (req: AuthRequest, res: Response) => {
   try {
     const { shopId, itemId } = req.params;
@@ -159,3 +159,111 @@ export const editItem = async (req: AuthRequest, res: Response) => {
     });
   }
 };
+
+
+
+// get all items by shop 
+export const getItemsByShop = async (req: AuthRequest, res: Response) => {
+  try {
+    const { shopId } = req.params;
+
+    // Find the shop
+    const shop = await Shop.findById(shopId);
+
+    if (!shop) {
+      return res.status(404).json({
+        success: false,
+        message: "Shop not found",
+      });
+    }
+
+    // Verify ownership
+    if (shop.owner.toString() !== req.userId) {
+      return res.status(403).json({
+        success: false,
+        message: "You are not authorized to access this shop's items",
+      });
+    }
+
+    // Find all items of this shop
+    const items = await Item.find({ shop: shop._id });
+
+    return res.status(200).json({
+      success: true,
+      message: "Items found",
+      items,
+    });
+  } catch (error) {
+    console.log(error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Failed to fetch items",
+    });
+  }
+};
+
+
+// delete item 
+export const deleteItem = async (req: AuthRequest, res: Response) => {
+  try {
+    const { shopId, itemId } = req.params;
+
+    // Find shop
+    const shop = await Shop.findById(shopId);
+
+    if (!shop) {
+      return res.status(404).json({
+        success: false,
+        message: "Shop not found",
+      });
+    }
+
+    // Verify ownership of the shop
+    if (shop.owner.toString() !== req.userId) {
+      return res.status(403).json({
+        success: false,
+        message: "You are not authorized to delete items from this shop",
+      });
+    }
+
+    // Find item
+    const item = await Item.findById(itemId);
+
+    if (!item) {
+      return res.status(404).json({
+        success: false,
+        message: "Item not found",
+      });
+    }
+
+    // Verify that this item belongs to this shop
+    if (item.shop.toString() !== shop._id.toString()) {
+      return res.status(400).json({
+        success: false,
+        message: "Item does not belong to this shop",
+      });
+    }
+
+    // Delete image from Cloudinary if it exists
+    if (item.image?.publicId) {
+      await deleteFromCloudinary(item.image.publicId);
+    }
+
+    // Delete item from database
+    await Item.findByIdAndDelete(itemId);
+
+    return res.status(200).json({
+      success: true,
+      message: "Item deleted successfully",
+    });
+  } catch (error) {
+    console.log(error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Failed to delete item",
+    });
+  }
+};
+

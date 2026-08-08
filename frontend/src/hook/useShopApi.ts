@@ -29,10 +29,13 @@ export const useShopApi = () => {
     return response.data;
   }
 
+
+  
+
   return {
     createShop,
     editShop,
     getOwnerShops,
-    getShopById
+    getShopById,
   };
 };

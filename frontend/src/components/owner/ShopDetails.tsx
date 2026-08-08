@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   ArrowLeft,
   Star,
@@ -6,68 +6,68 @@ import {
   Pencil,
   Trash2,
   Settings,
-  Folder,
-  List,
-  MapPin,
-  Utensils,
-  Phone,
-  Clock,
+  Plus,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 import { Link, useParams } from "react-router-dom";
-import { useSelector } from "react-redux";
-import type { RootState } from "@/store/store";
+import { useDispatch, useSelector } from "react-redux";
+import type { AppDispatch, RootState } from "@/store/store";
 import RecentOrders from "./RecentOrders";
-import ShopInfo from "./ShopInfo";
 import { MenuOverview } from "./MenuOverview";
 import { AddFirstItem } from "./AddFirstItem";
+import { ShopGeneralInfo } from "./ShopInfo";
+import { useItemApi } from "@/hook/useItemApi";
+import { clearItems, setItems } from "@/store/ItemSlice";
+import ItemCard from "./ItemCard";
 
 export default function ShopDetails() {
 
-  // const recentOrders = [
-  //   {
-  //     id: "#10123",
-  //     customer: "Emily J.",
-  //     items: "2x Margherita",
-  //     date: "Oct 26, 7:15 PM",
-  //     status: "Completed",
-  //     total: "$38.50",
-  //   },
-  //   {
-  //     id: "#10124",
-  //     customer: "Mike D.",
-  //     items: "1x Lasagna\n1x Gelato",
-  //     date: "Oct 26, 7:10 PM",
-  //     status: "Completed",
-  //     total: "$29.00",
-  //   },
-  //   {
-  //     id: "#10125",
-  //     customer: "Sarah K.",
-  //     items: "1x Risotto",
-  //     date: "Oct 26, 7:05 PM",
-  //     status: "In Progress",
-  //     total: "$21.50",
-  //   },
-  //   {
-  //     id: "#10126",
-  //     customer: "David L.",
-  //     items: "3x Ravioli",
-  //     date: "Oct 26, 6:55 PM",
-  //     status: "Completed",
-  //     total: "$55.00",
-  //   },
-  // ];
+  const [loadingItems, setLoadingItems] = useState(true);
+  const dispatch = useDispatch<AppDispatch>();
 
-  const menuItems = [];
+  const { getItemsByShop } = useItemApi();
 
   const { shopId } = useParams();
+
   const shop = useSelector((state: RootState) =>
     state.shop.shops.find((shop) => shop._id === shopId),
   );
+
+  const items = useSelector((state: RootState) => state.item.items);
+
+  useEffect(() => {
+    const fetchItems = async () => {
+      if (!shopId) return;
+
+      try {
+        const response = await getItemsByShop(shopId);
+
+        dispatch(setItems(response.items));
+      } catch (error) {
+        console.log(error);
+      } finally {
+        setLoadingItems(false);
+      }
+    };
+
+    if (items.length === 0) {
+      fetchItems();
+    } else {
+      setLoadingItems(false);
+    }
+  }, [shopId, items.length, dispatch]);
+
+  useEffect(() => {
+    return () => {
+      dispatch(clearItems());
+    };
+  }, [dispatch]);
+
+  if (loadingItems) {
+    return <div>Loading...</div>;
+  }
 
   if (!shop) {
     return <div>Shop not found</div>;
@@ -89,7 +89,7 @@ export default function ShopDetails() {
             </Link>
           </Button>
           <h1 className="text-2xl font-bold tracking-tight uppercase">
-            {shop.name} - Shop Details
+            Welcome to - {shop.name} 
           </h1>
         </div>
         <div className="text-sm text-slate-500 font-medium">
@@ -163,22 +163,40 @@ export default function ShopDetails() {
 
       {/* Middle Grid Section */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+        {items.length === 0 ? (
+          <AddFirstItem shopId={shop._id} />
+        ) : (
+          <MenuOverview />
+        )}
 
-     {menuItems.length === 0 ? (
-    <AddFirstItem shopId={shop._id} />
-  ) : (
-    <MenuOverview />
-  )}
-      
-
-<ShopInfo shop={shop}/>
-
+        <ShopGeneralInfo shop={shop} />
       </div>
 
-     
+      {/* Show only if there are items */}
+      {items.length > 0 && (
+        <>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-2xl font-bold">Menu Items</h2>
+            <Button
+              asChild
+              className="bg-[#581c87] hover:bg-[#4c1775] cursor-pointer"
+            >
+              <Link to={`/owner/shop/${shop._id}/item/add`}>
+                <Plus className="w-4 h-4 mr-2" />
+                Add Item
+              </Link>
+            </Button>
+          </div>
 
-      <RecentOrders/>
+          <div className="flex flex-col gap-5 mb-8">
+            {items.map((item) => (
+              <ItemCard key={item._id} item={item}   shopId={shop._id} />
+            ))}
+          </div>
+        </>
+      )}
 
+      <RecentOrders />
     </div>
   );
 }

@@ -16,19 +16,25 @@ import {
 } from "@/schema/itemSchema";
 import { useItemApi } from "@/hook/useItemApi";
 import prePreview from "../../assets/pre-preview2.png";
-import { useDispatch } from "react-redux";
-import type { AppDispatch } from "@/store/store";
-import { addItem } from "@/store/ItemSlice";
+import { useDispatch, useSelector } from "react-redux";
+import type { AppDispatch, RootState } from "@/store/store";
+import { setItems, updateItem } from "@/store/ItemSlice";
+import type { IItem } from "@/types/item.types";
 
-const AddItem = () => {
+const EditItem = () => {
   const navigate = useNavigate();
-  const { shopId } = useParams();
-  const { addShopItem } = useItemApi();
+
+  const { shopId, itemId } = useParams();
+
+  const { editItem, getItemsByShop } = useItemApi();
 
   const [previewUrl, setPreviewUrl] = useState(prePreview);
 
-    const dispatch = useDispatch<AppDispatch>();
+  const dispatch = useDispatch<AppDispatch>();
 
+  const item = useSelector((state: RootState) =>
+    state.item.items.find((item) => item._id === itemId),
+  );
 
   const {
     register,
@@ -44,6 +50,57 @@ const AddItem = () => {
       isAvailable: true,
     },
   });
+
+  useEffect(() => {
+    const loadItem = async () => {
+      if (!shopId || !itemId) return;
+
+      try {
+        // Item already exists in Redux
+        if (item) {
+          reset({
+            name: item.name,
+            description: item.description,
+            category: item.category,
+            price: item.price,
+            foodType: item.foodType,
+            isAvailable: item.isAvailable,
+          });
+
+          setPreviewUrl(item.image?.url || prePreview);
+
+          return;
+        }
+
+        // Item is not in Redux, so fetch all items of this shop
+        const response = await getItemsByShop(shopId);
+
+        dispatch(setItems(response.items));
+
+        // Find the item we are editing
+        const itemToEdit = response.items.find(
+          (item: IItem) => item._id === itemId,
+        );
+
+        if (!itemToEdit) return;
+
+        reset({
+          name: itemToEdit.name,
+          description: itemToEdit.description,
+          category: itemToEdit.category,
+          price: itemToEdit.price,
+          foodType: itemToEdit.foodType,
+          isAvailable: itemToEdit.isAvailable,
+        });
+
+        setPreviewUrl(itemToEdit.image?.url || prePreview);
+      } catch (error) {
+        console.log(error);
+      }
+    };
+
+    loadItem();
+  }, [item, itemId, shopId, getItemsByShop, dispatch, reset]);
 
   const name = watch("name");
   const description = watch("description");
@@ -68,10 +125,7 @@ const AddItem = () => {
 
   // Generate a temporary preview URL whenever the selected image changes
   useEffect(() => {
-    if (!image) {
-      setPreviewUrl(prePreview);
-      return;
-    }
+    if (!image) return;
 
     const objectUrl = URL.createObjectURL(image);
 
@@ -84,17 +138,16 @@ const AddItem = () => {
 
   // Create the item and navigate back to the shop page on success
   const onSubmit = async (data: CreateItemForm) => {
-    if (!shopId) return;
+    if (!shopId || !itemId) return;
 
     try {
-
-      // Convert form data into FormData for multipart/form-data request
+   
       const formData = new FormData();
 
       Object.entries(data).forEach(([key, value]) => {
         if (value == null) return;
 
-          // Files are appended directly; other values are converted to strings
+       
         if (value instanceof File) {
           formData.append(key, value);
         } else {
@@ -102,9 +155,9 @@ const AddItem = () => {
         }
       });
 
-      const response = await addShopItem(shopId, formData);
+      const response = await editItem(shopId, itemId, formData);
 
-      dispatch(addItem(response.item));
+      dispatch(updateItem(response.item));
 
       reset();
       setPreviewUrl(prePreview);
@@ -142,9 +195,12 @@ const AddItem = () => {
             <UtensilsCrossed className="w-8 h-8" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold text-slate-900">Add Menu Item</h1>
+            <h1 className="text-2xl font-bold text-slate-900">
+              {" "}
+              Edit Menu Item
+            </h1>
             <p className="text-slate-500 text-sm mt-1">
-              Add the details of your dish to add it to your menu
+              Edit the details of your menu item
             </p>
           </div>
         </div>
@@ -410,7 +466,7 @@ const AddItem = () => {
                     Cancel
                   </button>
                   <button className="px-6 py-2.5 rounded-lg bg-[#581c87] text-white font-medium text-sm hover:bg-[#4c1775] transition-colors flex items-center cursor-pointer">
-                    Add Item
+                    Save Changes
                   </button>
                 </div>
               </form>
@@ -508,4 +564,4 @@ const AddItem = () => {
   );
 };
 
-export default AddItem;
+export default EditItem;

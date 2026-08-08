@@ -8,7 +8,7 @@ interface ShopInfoProps {
 }
 
 
-const ShopInfo = ({shop}: ShopInfoProps) => {
+export const ShopGeneralInfo = ({shop}: ShopInfoProps) => {
   return (
     <>
      {/* General Information Card */}
@@ -52,5 +52,3 @@ const ShopInfo = ({shop}: ShopInfoProps) => {
     </>
   )
 }
-
-export default ShopInfo
