@@ -5,6 +5,7 @@ import {
   uploadToCloudinary,
 } from "../util/cloudinaryUploadAndDel.js";
 import { Shop } from "../models/shop.modal.js";
+import { Item } from "../models/item.modal.js";
 
 // create shop
 export const createShop = async (req: AuthRequest, res: Response) => {
@@ -214,3 +215,44 @@ export const getShopById = async (req: AuthRequest, res: Response) => {
     });
   }
 };
+
+
+// get shops by city
+
+export const getShopsByCity = async (req: AuthRequest, res: Response) => {
+  try {
+    const { city } = req.query;
+
+    if (typeof city !== "string" || !city.trim()) {
+      return res.status(400).json({
+        success: false,
+        message: "City is required",
+      });
+    }
+
+    const shops = await Shop.find({
+      city: city.trim(),
+    }).lean();
+
+    return res.status(200).json({
+      success: true,
+      shops,
+    });
+  } catch (error) {
+    console.error("getShopsByCity:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Failed to fetch shops",
+    });
+  }
+};
+
+
+
+
+
+
+
+
+

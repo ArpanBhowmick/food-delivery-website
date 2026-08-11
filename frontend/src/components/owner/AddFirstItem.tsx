@@ -25,7 +25,7 @@ export const AddFirstItem = ({ shopId }: firstItemProps) => {
       </p>
 
       <Button asChild className="mt-6 bg-[#581c87] hover:bg-[#4c1775] cursor-pointer">
-        <Link to={`/owner/shop/${shopId}/add-item`}>
+        <Link to={`/owner/shop/${shopId}/item/add`}>
           <Plus className="w-4 h-4 mr-2" />
           Add First Menu Item
         </Link>

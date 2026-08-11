@@ -267,3 +267,50 @@ export const deleteItem = async (req: AuthRequest, res: Response) => {
   }
 };
 
+
+
+
+
+// get all items from shops in a city
+export const getItemsByCity = async (req: AuthRequest, res: Response) => {
+
+   try {
+    const { city } = req.query;
+
+    if (typeof city !== "string" || !city.trim()) {
+      return res.status(400).json({
+        success: false,
+        message: "City is required",
+      });
+    }
+
+    // Find shops in the requested city
+    const shops = await Shop.find({
+      city: city.trim(),
+    }).select("_id");
+
+    const shopIds = shops.map((shop) => shop._id);
+
+    // Find items belonging to those shops
+    const items = await Item.find({
+      shop: { $in: shopIds },
+    }).lean();
+
+    return res.status(200).json({
+      success: true,
+      items,
+    });
+  } catch (error) {
+    console.error("getItemsByCity:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Failed to fetch items",
+    });
+  }
+};
+
+
+
+
+

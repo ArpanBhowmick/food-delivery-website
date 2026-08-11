@@ -15,27 +15,34 @@ export const useShopApi = () => {
     return response.data;
   };
 
-
   // get all owner shops
   const getOwnerShops = async () => {
-    const response = await axiosPrivate.get("/shop");
+    const response = await axiosPrivate.get("/shop/owner");
     return response.data;
-  }
-
+  };
 
   // get shop by id
   const getShopById = async (shopId: string) => {
-    const response  = await axiosPrivate.get(`/shop/${shopId}`)
+    const response = await axiosPrivate.get(`/shop/${shopId}`);
     return response.data;
-  }
+  };
 
+  // get all shops by city
+  const getShopsByCity = async (city: string) => {
+    const response = await axiosPrivate.get("/shop/city", {
+      params: {
+        city,
+      },
+    });
 
-  
+    return response.data;
+  };
 
   return {
     createShop,
     editShop,
     getOwnerShops,
     getShopById,
+    getShopsByCity,
   };
 };

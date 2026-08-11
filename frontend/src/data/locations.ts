@@ -3,6 +3,7 @@ export const states = [
   "Maharashtra",
   "Karnataka",
   "Tamil Nadu",
+  "West Bengal",
 ];
 
 export const cities = {
@@ -32,5 +33,12 @@ export const cities = {
     "Coimbatore",
     "Madurai",
     "Salem",
+  ],
+
+  "West Bengal": [
+    "Kolkata",
+    "Howrah",
+    "Durgapur",
+    "Darjeeling",
   ],
 } as const;

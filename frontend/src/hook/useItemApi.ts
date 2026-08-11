@@ -29,10 +29,22 @@ export const useItemApi = () => {
     return response.data;
   };
 
+
+  // get all items from shops in a city
+  const getItemsByCity = async (city: string) => {
+    const response = await axiosPrivate.get("/item/city", {
+      params: {
+        city,
+      },
+    });
+    return response.data;
+  };
+
   return {
     addShopItem,
     editItem,
     getItemsByShop,
-    deleteItem
+    deleteItem,
+    getItemsByCity
   };
 };

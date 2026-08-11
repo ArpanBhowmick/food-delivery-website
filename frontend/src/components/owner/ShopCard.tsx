@@ -22,7 +22,7 @@ const ShopCard = ({ shop }: ShopCardProps) => {
       {/* Image Section */}
       <div className="relative h-48">
         <img
-          src={shop.image.url}
+          src={shop.image?.url}
           alt={shop.name}
           className="w-full h-full object-cover"
         />

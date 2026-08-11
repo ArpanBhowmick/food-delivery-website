@@ -2,6 +2,8 @@ import type { Response } from "express";
 import { User } from "../models/user.model.js";
 import type { AuthRequest } from "../types/types.js";
 
+
+// get current user 
 export const getCurrentUser = async (req: AuthRequest, res: Response) => {
   try {
     const userId = req.userId;
