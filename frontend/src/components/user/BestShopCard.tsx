@@ -1,8 +1,8 @@
 import { useShopApi } from "@/hook/useShopApi";
+import useHorizontalOverflow from "@/hook/useHorizontalOverflow";
 import type { IShop } from "@/types/shop.types";
 import { ChevronRight, Clock, MapPin, Star } from "lucide-react";
 import { useEffect, useState } from "react";
-
 
 type DisplayShop = IShop & {
   rating: number;
@@ -10,7 +10,6 @@ type DisplayShop = IShop & {
   distance: string;
   time: string;
 };
-
 
 const BestShopCard = ({ city = "Kolkata" }) => {
   // Dummy data for shops
@@ -45,33 +44,30 @@ const BestShopCard = ({ city = "Kolkata" }) => {
 
   const [shops, setShops] = useState<DisplayShop[]>([]);
 
-useEffect(() => {
-  const fetchShops = async () => {
-    if (!city) return;
 
-    try {
-      const response = await getShopsByCity(city);
-      
-     
+  useEffect(() => {
+    const fetchShops = async () => {
+      if (!city) return;
 
-      const shopsWithDisplayData = response.shops.map((shop: IShop) => ({
-        ...shop,
-        rating: 4.8,
-        tags: "North Indian, Mughlai",
-        distance: "2.1 km",
-        time: "25 min",
-      }));
+      try {
+        const response = await getShopsByCity(city);
 
-      setShops(shopsWithDisplayData);
+        const shopsWithDisplayData = response.shops.map((shop: IShop) => ({
+          ...shop,
+          rating: 4.8,
+          tags: "North Indian, Mughlai",
+          distance: "2.1 km",
+          time: "25 min",
+        }));
 
-      
-    } catch (error) {
-      console.log(error);
-    }
-  };
+        setShops(shopsWithDisplayData);
+      } catch (error) {
+        console.log(error);
+      }
+    };
 
-  fetchShops();
-}, [city]);
+    fetchShops();
+  }, [city]);
 
   return (
     <div className="mt-10">
@@ -80,27 +76,32 @@ useEffect(() => {
         <h2 className="text-xl font-bold text-gray-800">
           Best Shops in {city}
         </h2>
-        <button className="text-sm font-medium text-orange-500 bg-orange-100/50 px-4 py-1.5 rounded-full flex items-center gap-1 hover:bg-orange-100 transition cursor-pointer">
-          View all <ChevronRight size={16} />
-        </button>
+        
+          <button className="text-sm font-medium text-[#7e22ce] bg-purple-100/50 px-4 py-1.5 rounded-full flex items-center gap-1 hover:bg-purple-100 transition cursor-pointer">
+            View all <ChevronRight size={16} />
+          </button>
+        
       </div>
 
       {/* Shops Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-        {shops.map((shop) => (
-          <div
-            key={shop._id}
-            className="bg-white rounded-[1.5rem] overflow-hidden shadow-sm hover:shadow-md transition cursor-pointer flex flex-col"
-          >
+      <div>
+        <div
+          className="flex gap-4 overflow-x-auto pb-2 snap-x snap-mandatory sm:grid sm:grid-cols-2 md:grid-cols-4 sm:gap-6 sm:overflow-visible sm:pb-0 xl:grid xl:grid-cols-4 xl:gap-6 xl:overflow-visible xl:pb-0 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+        >
+          {shops.map((shop) => (
+            <div
+              key={shop._id}
+              className="bg-white rounded-[1.5rem] overflow-hidden border border-gray-300 shadow-sm hover:shadow-md transition cursor-pointer flex flex-col h-[290px] min-w-[240px] snap-start sm:min-w-0 xl:min-w-0 xl:w-full"
+            >
             {/* Image Container with Rating Badge */}
             <div className="relative">
               <img
-                src={shop.image?.url }
+                src={shop.image?.url}
                 alt={shop.name}
-                className="w-full h-36 object-cover "
+                className="w-full h-44 object-cover"
               />
               <div className="absolute top-3 right-3 bg-white/90 backdrop-blur-sm px-2 py-1 rounded-lg text-xs font-bold text-gray-800 flex items-center gap-1 shadow-sm">
-                <Star size={12} className="fill-orange-400 text-orange-400" />
+                <Star size={12} className="fill-[#7e22ce] text-[#7e22ce]" />
                 {shop.rating}
               </div>
             </div>
@@ -117,18 +118,19 @@ useEffect(() => {
               {/* Distance & Time Footer */}
               <div className="flex items-center gap-3 text-xs font-semibold text-gray-500 mt-auto pt-2 border-t border-gray-100">
                 <div className="flex items-center gap-1">
-                  <MapPin size={14} className="text-orange-400" />
+                  <MapPin size={14} className="text-[#7e22ce]" />
                   <span>{shop.distance}</span>
                 </div>
                 <span className="text-gray-300">•</span>
                 <div className="flex items-center gap-1">
-                  <Clock size={14} className="text-orange-400" />
+                  <Clock size={14} className="text-[#7e22ce]" />
                   <span>{shop.time}</span>
                 </div>
               </div>
             </div>
           </div>
         ))}
+        </div>
       </div>
     </div>
   );

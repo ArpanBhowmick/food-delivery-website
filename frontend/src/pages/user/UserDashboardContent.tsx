@@ -9,21 +9,15 @@ import { useSelector } from "react-redux";
 import type { RootState } from "@/store/store";
 
 const UserDashboardContent = () => {
-
-const city = useSelector((state:  RootState) => state.location.city)
-
-
-
-
-
+  const city = useSelector((state: RootState) => state.location.city);
 
   return (
-    <div className="min-h-screen bg-[#f3f4f6] p-6 lg:p-10 font-sans text-gray-800 flex justify-center">
-      <div className="max-w-[1440px] w-full grid grid-cols-1 xl:grid-cols-12 gap-8">
+    <div className="min-h-screen bg-[#f3f4f6] p-4 sm:p-6 lg:p-10 font-sans text-gray-800 flex justify-center overflow-x-clip">
+      <div className="max-w-[1440px] w-full grid grid-cols-1 xl:grid-cols-12 gap-6 lg:gap-8">
         {/* LEFT COLUMN: Main Content */}
-        <div className="xl:col-span-8 2xl:col-span-9 space-y-10">
+        <div className="xl:col-span-12 space-y-8 lg:space-y-10 min-w-0">
           {/* Hero Section */}
-          <div className="relative bg-[#1a1311] rounded-[2rem] p-8 md:p-12 overflow-hidden flex items-center min-h-[300px]">
+          <div className="relative bg-[#1a1311] rounded-[1.5rem] md:rounded-[2rem] p-6 md:p-12 overflow-hidden flex items-center min-h-[280px] md:min-h-[300px]">
             {/* Image Container with Blending Effect */}
             <div className="absolute inset-y-0 right-0 w-full md:w-[75%] z-0">
               <img
@@ -64,7 +58,7 @@ const city = useSelector((state:  RootState) => state.location.city)
         </div>
 
         {/* RIGHT COLUMN: Sidebar / Order Menu */}
-        <CheckoutCard />
+        {/* <CheckoutCard /> */}
       </div>
     </div>
   );

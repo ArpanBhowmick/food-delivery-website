@@ -216,12 +216,11 @@ export const getShopById = async (req: AuthRequest, res: Response) => {
   }
 };
 
-
 // get shops by city
 
 export const getShopsByCity = async (req: AuthRequest, res: Response) => {
   try {
-    const { city } = req.query;
+    const { city} = req.query;
 
     if (typeof city !== "string" || !city.trim()) {
       return res.status(400).json({
@@ -230,9 +229,11 @@ export const getShopsByCity = async (req: AuthRequest, res: Response) => {
       });
     }
 
+
     const shops = await Shop.find({
       city: city.trim(),
-    }).lean();
+    }).lean()     
+      .limit(4);
 
     return res.status(200).json({
       success: true,
@@ -247,12 +248,3 @@ export const getShopsByCity = async (req: AuthRequest, res: Response) => {
     });
   }
 };
-
-
-
-
-
-
-
-
-

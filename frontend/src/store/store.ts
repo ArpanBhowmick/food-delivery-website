@@ -3,17 +3,17 @@ import authReducer from "./authSlice";
 import locationReducer from "./locationSlice";
 import shopReducer from "./shopSlice";
 import itemReducer from "./ItemSlice";
-
+import cartReducer from "./cartSlice";
 
 export const store = configureStore({
   reducer: {
     auth: authReducer,
     location: locationReducer,
     shop: shopReducer,
-     item: itemReducer,
+    item: itemReducer,
+    cart: cartReducer,
   },
 });
-
 
 export type RootState = ReturnType<typeof store.getState>;
 export type AppDispatch = typeof store.dispatch;

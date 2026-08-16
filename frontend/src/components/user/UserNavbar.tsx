@@ -9,6 +9,7 @@ import type { RootState } from "@/store/store";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import useLogout from "@/hook/useLogout";
 import useLocation from "@/hook/useLocation";
+import CartDrawer from "./CartDrawer";
 
 export default function UserNavbar() {
   const [searchOpen, setSearchOpen] = useState(false);
@@ -16,8 +17,17 @@ export default function UserNavbar() {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
+  const [cartOpen, setCartOpen] = useState(false);
+
   const user = useSelector((state: RootState) => state.auth.user);
   const location = useSelector((state: RootState) => state.location);
+
+  const cartItems = useSelector((state: RootState) => state.cart.items);
+
+  const cartCount = cartItems.reduce(
+    (total, cartItem) => total + cartItem.quantity,
+    0,
+  );
 
   const logOut = useLogout();
   const getCurrentLocation = useLocation();
@@ -62,7 +72,6 @@ export default function UserNavbar() {
               <span className="max-w-[220px] truncate text-xs text-muted-foreground">
                 {location.address || "Select Location"}
               </span>
-              
             </div>
 
             <ChevronDown className="h-4 w-4" />
@@ -104,14 +113,17 @@ export default function UserNavbar() {
             My Orders
           </button>
 
-          <button className="flex flex-col items-center justify-center gap-1 text-gray-600 hover:text-[#640a99] transition-colors cursor-pointer">
+          <button
+            onClick={() => setCartOpen(true)}
+            className="flex flex-col items-center justify-center gap-1 text-gray-600 hover:text-[#640a99] transition-colors cursor-pointer"
+          >
             <div className="relative">
               <IoCartOutline className="text-[26px] stroke-[1.5]" />
+
               <span className="absolute -top-2 -right-2 flex items-center justify-center w-4 h-4 text-[10px] font-bold text-white bg-[#7E22CE] rounded-full">
-                0
+                {cartCount}
               </span>
             </div>
-            {/* <span className="text-[11px] font-medium leading-none">Cart</span> */}
           </button>
 
           {/* <Link to="/signin" className="flex flex-col items-center justify-center gap-1 text-[#080808] hover:opacity-80 transition-opacity">
@@ -170,7 +182,6 @@ export default function UserNavbar() {
           )}
         </div>
       </div>
-
       {/* Mobile search bar */}
       {searchOpen && (
         <div className="md:hidden">
@@ -193,7 +204,6 @@ export default function UserNavbar() {
           </div>
         </div>
       )}
-
       {/* Location modal */}
       {locationOpen && (
         <div>
@@ -266,6 +276,11 @@ export default function UserNavbar() {
           </div>
         </div>
       )}
+      
+      <header>
+        <CartDrawer open={cartOpen} onOpenChange={setCartOpen} />
+      </header>
+      
     </header>
   );
 }

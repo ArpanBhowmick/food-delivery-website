@@ -35,6 +35,7 @@ export const useItemApi = () => {
     const response = await axiosPrivate.get("/item/city", {
       params: {
         city,
+          
       },
     });
     return response.data;

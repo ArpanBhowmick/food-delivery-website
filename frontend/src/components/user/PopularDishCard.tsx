@@ -10,10 +10,6 @@ interface PopularDish extends IItem {
   rating: number;
 }
 
-interface DishCardProps {
-  dish: PopularDish;
-}
-
 // const popularDishes: PopularDish[] = [
 //   {
 //     _id: "1",
@@ -98,7 +94,7 @@ const PopularDishCard = () => {
       if (!city) return;
 
       try {
-        const response = await getItemsByCity(city);
+        const response = await getItemsByCity(city );
 
         console.log("ITEMS FROM API:", response.items);
 
@@ -122,11 +118,11 @@ const PopularDishCard = () => {
       <div>
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-xl font-bold">Popular Dishes</h2>
-          <button className="text-sm font-medium text-orange-500 bg-orange-100/50 px-4 py-1.5 rounded-full flex items-center gap-1 hover:bg-orange-100 transition cursor-pointer">
+          <button className="text-sm font-medium text-[#7e22ce] bg-purple-100/50 px-4 py-1.5 rounded-full flex items-center gap-1 hover:bg-purple-100 transition cursor-pointer">
             View all <ChevronRight size={16} />
           </button>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
           {items.map((item) => (
             <DishCard key={item._id} dish={item} />
           ))}

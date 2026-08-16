@@ -32,6 +32,7 @@ export const useShopApi = () => {
     const response = await axiosPrivate.get("/shop/city", {
       params: {
         city,
+        
       },
     });
 

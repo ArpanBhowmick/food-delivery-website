@@ -8,18 +8,18 @@ const CheckoutCard = () => {
     
     {/* RIGHT COLUMN: Sidebar / Order Menu */}
         <div className="xl:col-span-4 2xl:col-span-3">
-          <div className="bg-white rounded-[2rem] p-6 shadow-sm sticky top-6">
+          <div className="bg-white rounded-[2rem] p-6 shadow-sm xl:sticky xl:top-6">
             {/* Address Details */}
             <div className="mb-8">
               <h3 className="text-gray-400 text-sm mb-2">Your Address</h3>
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2">
-                  <MapPin className="text-orange-500" size={20} />
+                  <MapPin className="text-[#7e22ce]" size={20} />
                   <span className="font-bold text-gray-800">
                     Elm Street, 23
                   </span>
                 </div>
-                <button className="text-xs font-semibold text-orange-500 border border-orange-200 rounded-lg px-3 py-1 hover:bg-orange-50 cursor-pointer">
+                <button className="text-xs font-semibold text-[#7e22ce] border border-purple-200 rounded-lg px-3 py-1 hover:bg-purple-50 cursor-pointer">
                   Change
                 </button>
               </div>
@@ -110,18 +110,18 @@ const CheckoutCard = () => {
               <div className="flex items-center justify-between">
                 <span className="font-bold text-lg text-gray-800">Total</span>
                 <span className="font-extrabold text-xl text-gray-800">
-                  <span className="text-orange-500">$</span>202.00
+                  <span className="text-[#7e22ce]">$</span>202.00
                 </span>
               </div>
             </div>
 
             {/* Coupon Code */}
-            <button className="w-full bg-orange-50 border border-orange-200 rounded-xl py-3 px-4 flex items-center justify-between mb-4 group hover:bg-orange-100 transition cursor-pointer">
+            <button className="w-full bg-purple-50 border border-purple-200 rounded-xl py-3 px-4 flex items-center justify-between mb-4 group hover:bg-purple-100 transition cursor-pointer">
               <div className="flex items-center gap-3">
-                <div className="bg-orange-500 rounded-lg p-1.5 text-white">
+                <div className="bg-[#7e22ce] rounded-lg p-1.5 text-white">
                   <Ticket size={18} />
                 </div>
-                <span className="text-sm font-semibold text-gray-800 group-hover:text-orange-600 transition">
+                <span className="text-sm font-semibold text-gray-800 group-hover:text-[#640a99] transition">
                   Have a coupon code?
                 </span>
               </div>
@@ -129,7 +129,7 @@ const CheckoutCard = () => {
             </button>
 
             {/* Checkout Button */}
-            <button className="w-full bg-[#f09319] hover:bg-orange-500 text-white font-bold rounded-xl py-4 transition duration-200 shadow-md shadow-orange-200 cursor-pointer">
+            <button className="w-full bg-[#7e22ce] hover:bg-[#640a99] text-white font-bold rounded-xl py-4 transition duration-200 shadow-md shadow-purple-200 cursor-pointer">
               Checkout
             </button>
           </div>

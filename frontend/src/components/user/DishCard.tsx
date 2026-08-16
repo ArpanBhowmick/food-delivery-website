@@ -1,6 +1,8 @@
+import { addToCart, decreaseQuantity, increaseQuantity } from "@/store/cartSlice";
+import type { AppDispatch, RootState } from "@/store/store";
 import type { IItem } from "@/types/item.types";
 import { Star } from "lucide-react";
-import { useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
 
 interface DisplayItem extends IItem {
   rating: number;
@@ -11,10 +13,17 @@ interface DishCardProps {
 }
 
 export const DishCard = ({ dish }: DishCardProps) => {
-  const [count, setCount] = useState(0);
+
+  const dispatch = useDispatch<AppDispatch>();
+
+  const cartItem = useSelector((state: RootState) =>
+    state.cart.items.find((cartItem) => cartItem.item._id === dish._id),
+  );
+
+  const count = cartItem?.quantity ?? 0;
 
   return (
-    <div className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition cursor-pointer flex flex-col h-[340px]">
+    <div className="bg-white rounded-2xl overflow-hidden border border-gray-300 shadow-sm hover:shadow-md transition cursor-pointer flex flex-col h-[340px]">
       <div className="relative shrink-0">
         <img
           src={dish.image?.url ?? "/placeholder-shop.jpg"}
@@ -36,7 +45,7 @@ export const DishCard = ({ dish }: DishCardProps) => {
       <div className="p-4 flex flex-col flex-1 min-h-0">
         <div className="flex items-center justify-between mb-2">
           <span className="flex items-center gap-1">
-            <Star size={14} className="fill-orange-400 text-orange-400" />
+            <Star size={14} className="fill-[#7e22ce] text-[#7e22ce]" />
             <span className="text-xs font-bold">{dish.rating}</span>
           </span>
           <span className="text-[10px] font-semibold text-gray-500 bg-gray-100 rounded-md px-2 py-0.5">
@@ -52,25 +61,25 @@ export const DishCard = ({ dish }: DishCardProps) => {
           </p>
         )}
         <div className="flex items-center justify-between mt-auto pt-2">
-          <p className="text-orange-500 font-bold">${dish.price}</p>
+          <p className="text-[#7e22ce] font-bold">${dish.price}</p>
           {count === 0 ? (
             <button
-              onClick={() => setCount(1)}
-              className="w-20 bg-[#f09319] hover:bg-orange-500 text-white text-sm font-bold rounded-xl py-2 transition duration-200 shadow-[4px_4px_0_0_rgba(240,147,25,0.35)] cursor-pointer"
+              onClick={() => dispatch(addToCart(dish))}
+              className="w-20 bg-[#7e22ce] hover:bg-[#640a99] text-white text-sm font-bold rounded-xl py-2 transition duration-200 shadow-[4px_4px_0_0_rgba(126,34,206,0.35)] cursor-pointer"
             >
               Add
             </button>
           ) : (
-            <div className="flex items-center justify-between bg-[#f09319] text-white font-bold rounded-xl w-24 py-1 shadow-[4px_4px_0_0_rgba(240,147,25,0.35)]">
+            <div className="flex items-center justify-between bg-[#7e22ce] text-white font-bold rounded-xl w-24 py-1 shadow-[4px_4px_0_0_rgba(126,34,206,0.35)]">
               <button
-                onClick={() => setCount((c) => (c > 1 ? c - 1 : 0))}
+                onClick={() => dispatch(decreaseQuantity(dish._id))}
                 className="w-8 h-8 rounded-lg hover:bg-white/10 flex items-center justify-center text-lg leading-none cursor-pointer"
               >
                 −
               </button>
               <span className="text-sm">{count}</span>
               <button
-                onClick={() => setCount((c) => c + 1)}
+                onClick={() => dispatch(increaseQuantity(dish._id))}
                 className="w-8 h-8 rounded-lg hover:bg-white/10 flex items-center justify-center text-lg leading-none cursor-pointer"
               >
                 +

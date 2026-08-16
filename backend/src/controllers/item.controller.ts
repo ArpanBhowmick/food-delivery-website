@@ -149,7 +149,6 @@ export const editItem = async (req: AuthRequest, res: Response) => {
       message: "Item updated successfully",
       item,
     });
-    
   } catch (error) {
     console.log(error);
 
@@ -160,9 +159,7 @@ export const editItem = async (req: AuthRequest, res: Response) => {
   }
 };
 
-
-
-// get all items by shop 
+// get all items by shop
 export const getItemsByShop = async (req: AuthRequest, res: Response) => {
   try {
     const { shopId } = req.params;
@@ -203,8 +200,7 @@ export const getItemsByShop = async (req: AuthRequest, res: Response) => {
   }
 };
 
-
-// delete item 
+// delete item
 export const deleteItem = async (req: AuthRequest, res: Response) => {
   try {
     const { shopId, itemId } = req.params;
@@ -267,14 +263,9 @@ export const deleteItem = async (req: AuthRequest, res: Response) => {
   }
 };
 
-
-
-
-
 // get all items from shops in a city
 export const getItemsByCity = async (req: AuthRequest, res: Response) => {
-
-   try {
+  try {
     const { city } = req.query;
 
     if (typeof city !== "string" || !city.trim()) {
@@ -294,7 +285,8 @@ export const getItemsByCity = async (req: AuthRequest, res: Response) => {
     // Find items belonging to those shops
     const items = await Item.find({
       shop: { $in: shopIds },
-    }).lean();
+    }).lean()
+      .limit(5);
 
     return res.status(200).json({
       success: true,
@@ -309,8 +301,3 @@ export const getItemsByCity = async (req: AuthRequest, res: Response) => {
     });
   }
 };
-
-
-
-
-
