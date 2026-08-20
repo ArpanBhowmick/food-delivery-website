@@ -9,7 +9,8 @@ import type { RootState } from "@/store/store";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import useLogout from "@/hook/useLogout";
 import useLocation from "@/hook/useLocation";
-import CartDrawer from "./CartDrawer";
+import CartDrawer from "./cart/CartDrawer";
+import CheckoutDrawer from "./CheckoutDrawer";
 
 export default function UserNavbar() {
   const [searchOpen, setSearchOpen] = useState(false);
@@ -18,11 +19,21 @@ export default function UserNavbar() {
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   const [cartOpen, setCartOpen] = useState(false);
+  const [checkoutOpen, setCheckoutOpen] = useState(false);
 
   const user = useSelector((state: RootState) => state.auth.user);
   const location = useSelector((state: RootState) => state.location);
 
   const cartItems = useSelector((state: RootState) => state.cart.items);
+
+  const itemTotal = cartItems.reduce(
+    (sum, cartItem) => sum + cartItem.item.price * cartItem.quantity,
+    0,
+  );
+
+  const deliveryFee = itemTotal > 500 ? 0 :40;
+
+  console.log("📍 Navbar location:", location);
 
   const cartCount = cartItems.reduce(
     (total, cartItem) => total + cartItem.quantity,
@@ -276,11 +287,29 @@ export default function UserNavbar() {
           </div>
         </div>
       )}
-      
+
       <header>
-        <CartDrawer open={cartOpen} onOpenChange={setCartOpen} />
+        <CartDrawer
+          open={cartOpen}
+          onOpenChange={setCartOpen}
+          onCheckout={() => setCheckoutOpen(true)}
+          cartItems={cartItems}
+          itemTotal={itemTotal}
+          deliveryFee={deliveryFee}
+        />
+
+        <CheckoutDrawer
+          open={checkoutOpen}
+          onOpenChange={setCheckoutOpen}
+          onBack={() => {
+            setCheckoutOpen(false);
+            setCartOpen(true);
+          }}
+          cartItems={cartItems}
+          itemTotal={itemTotal}
+          deliveryFee={deliveryFee}
+        />
       </header>
-      
     </header>
   );
 }

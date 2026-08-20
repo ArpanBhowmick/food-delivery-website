@@ -14,29 +14,37 @@ import {
 } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import type { AppDispatch, RootState } from "@/store/store";
-import { decreaseQuantity, increaseQuantity } from "@/store/cartSlice";
+import { decreaseQuantity, increaseQuantity, type CartItem } from "@/store/cartSlice";
+import BillSummary from "../checkout/BillSummary";
 
 interface CartDrawerProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  onCheckout: () => void;
+  cartItems: CartItem[];
+  itemTotal: number;
+  deliveryFee: number;
 }
 
-const DELIVERY_FEE = 40;
 
-const CartDrawer = ({ open, onOpenChange }: CartDrawerProps) => {
+const CartDrawer = ({
+  open,
+  onOpenChange,
+  onCheckout,
+  cartItems,
+  itemTotal,
+  deliveryFee,
+}: CartDrawerProps) => {
+
   const dispatch = useDispatch<AppDispatch>();
 
-  const cartItems = useSelector((state: RootState) => state.cart.items);
-
-  const itemCount = cartItems.reduce((sum, cartItem) => sum + cartItem.quantity, 0);
-
-  
-
-  // total billing
-  const itemTotal = cartItems.reduce(
-    (sum, cartItem) => sum + cartItem.item.price * cartItem.quantity,
-    0
+ 
+  const itemCount = cartItems.reduce(
+    (sum, cartItem) => sum + cartItem.quantity,
+    0,
   );
+
+ 
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -67,8 +75,7 @@ const CartDrawer = ({ open, onOpenChange }: CartDrawerProps) => {
 
               <span>
                 You are saving{" "}
-                <span className="font-bold">₹{DELIVERY_FEE}</span> on this
-                order
+                <span className="font-bold">₹{deliveryFee}</span> on this order
               </span>
             </div>
           )}
@@ -167,7 +174,9 @@ const CartDrawer = ({ open, onOpenChange }: CartDrawerProps) => {
                   <div key={cartItem.item._id} className="p-4 flex gap-4">
                     <div className="w-16 h-16 border border-gray-200 rounded-lg p-1 shrink-0">
                       <img
-                        src={cartItem.item.image?.url ?? "/placeholder-shop.jpg"}
+                        src={
+                          cartItem.item.image?.url ?? "/placeholder-shop.jpg"
+                        }
                         alt={cartItem.item.name}
                         className="w-full h-full object-cover rounded"
                       />
@@ -228,36 +237,14 @@ const CartDrawer = ({ open, onOpenChange }: CartDrawerProps) => {
                 </div>
               </div>
 
-              {/* Bill Summary */}
-              <h3 className="font-bold text-gray-900 text-base mb-3">
-                Bill Summary
-              </h3>
-              <div className="border border-gray-300 shadow-none rounded-xl p-4 mb-6 space-y-3.5 text-sm bg-white hover:shadow-md transition-shadow">
-                <div className="flex justify-between text-gray-600">
-                  <span>Item Total</span>
-                  <span className="text-gray-900 font-medium">₹{itemTotal}</span>
-                </div>
-                <div className="flex justify-between text-gray-600">
-                  <span>Delivery Fee</span>
-                  <span className="text-green-600 font-bold">FREE</span>
-                </div>
-                <div className="flex justify-between text-gray-600">
-                  <span>Handling Fee</span>
-                  <div className="space-x-2">
-                    <span className="line-through text-gray-400">₹40</span>
-                    <span className="text-green-600 font-bold">FREE</span>
-                  </div>
-                </div>
-                <div className="border-t border-dashed border-gray-200 pt-3 mt-1 flex justify-between font-bold text-base items-center">
-                  <span className="text-gray-900">To Pay</span>
-                  <div className="space-x-2 flex items-center">
-                    <span className="line-through text-gray-400 text-sm font-medium">
-                      ₹{itemTotal + DELIVERY_FEE}
-                    </span>
-                    <span className="text-gray-900 text-lg">₹{itemTotal}</span>
-                  </div>
-                </div>
-              </div>
+
+              {/* Bill summery  */}
+
+              <BillSummary
+                cartItems={cartItems}
+                itemTotal={itemTotal}
+                deliveryFee={deliveryFee}
+              />
 
               {/* Savings Banner */}
               <div className="bg-[#e2f6ea] rounded-xl p-4 border border-[#a6ddbf] hover:shadow-md transition-shadow">
@@ -265,7 +252,7 @@ const CartDrawer = ({ open, onOpenChange }: CartDrawerProps) => {
                   <Tag className="w-4 h-4 fill-green-200" />
                   <span>
                     You are saving{" "}
-                    <span className="font-bold">₹{DELIVERY_FEE}</span> on this
+                    <span className="font-bold">₹{deliveryFee}</span> on this
                     order
                   </span>
                 </div>
@@ -274,9 +261,13 @@ const CartDrawer = ({ open, onOpenChange }: CartDrawerProps) => {
                     <div className="bg-green-600 rounded-full w-5 h-5 flex items-center justify-center">
                       <IndianRupee className="w-3 h-3 text-white" />
                     </div>
-                    <span className="text-gray-800">Savings on Delivery Fee</span>
+                    <span className="text-gray-800">
+                      Savings on Delivery Fee
+                    </span>
                   </div>
-                  <span className="text-green-600 font-bold">₹{DELIVERY_FEE}</span>
+                  <span className="text-green-600 font-bold">
+                    ₹{deliveryFee}
+                  </span>
                 </div>
               </div>
             </>
@@ -286,7 +277,10 @@ const CartDrawer = ({ open, onOpenChange }: CartDrawerProps) => {
         {/* Fixed Bottom Checkout Button */}
         {cartItems.length > 0 && (
           <div className="shrink-0 p-4 bg-white border-t border-gray-200">
-            <Button className="w-full bg-[#f43f5e] hover:bg-[#e11d48] text-white h-14 rounded-xl flex justify-between px-6 text-lg font-medium shadow-md transition-all cursor-pointer">
+            <Button
+              onClick={onCheckout}
+              className="w-full bg-[#f43f5e] hover:bg-[#e11d48] text-white h-14 rounded-xl flex justify-between px-6 text-lg font-medium shadow-md transition-all cursor-pointer"
+            >
               <span>Proceed to Checkout</span>
               <span className="font-bold">₹{itemTotal}</span>
             </Button>
