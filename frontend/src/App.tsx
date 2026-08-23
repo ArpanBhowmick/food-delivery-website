@@ -18,6 +18,8 @@ import EditRestaurant from "./pages/owner/EditRestaurent";
 import ShopDetails from "./components/owner/ShopDetails";
 import AddItem from "./pages/owner/AddItem";
 import EditItem from "./pages/owner/EditItem";
+import OrderSuccess from "./components/user/checkout/OrderSuccess";
+import MyOrders from "./pages/user/MyOrders";
 // import CheckOut from "./pages/user/Checkout";
 
 const App = () => {
@@ -45,18 +47,11 @@ const App = () => {
         <Route element={<RequireAuth />}>
           {/* user routes */}
 
-          {/* <Route element={<UserLayout />}>
-
-            <Route element={<RequireRole allowedRoles={["user"]} />}>
-              <Route path="/" element={<UserDashboard />} />
-            </Route>
-            
-
-          </Route> */}
-
           {/* Protected user pages */}
           <Route element={<UserLayout />}>
-            {/* <Route path="/checkout" element={<CheckOut />} /> */}
+             <Route path="/orderSuccess" element={<OrderSuccess />} />
+
+             <Route path="/myOrders" element={<MyOrders />} />
           </Route>
 
           <Route element={<OwnerLayout />}>

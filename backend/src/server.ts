@@ -9,6 +9,7 @@ import authRouter from "./routes/auth.route.js";
 import shopRouter from "./routes/shop.route.js";
 import itemRouter from "./routes/item.route.js";
 import { configureCloudinary } from "./config/cloudinary.js";
+import orderRouter from "./routes/order.route.js";
 
 dotenv.config();
 configureCloudinary();
@@ -35,6 +36,9 @@ app.use("/api/shop", shopRouter)
 
 // item routes
 app.use("/api/item", itemRouter)
+
+// order routes
+app.use("/api/orders", orderRouter);
 
 
 

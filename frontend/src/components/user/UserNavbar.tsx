@@ -299,7 +299,7 @@ export default function UserNavbar() {
         />
 
         <CheckoutDrawer
-          open={checkoutOpen}
+          isCheckoutOpen={checkoutOpen}
           onOpenChange={setCheckoutOpen}
           onBack={() => {
             setCheckoutOpen(false);
@@ -308,6 +308,7 @@ export default function UserNavbar() {
           cartItems={cartItems}
           itemTotal={itemTotal}
           deliveryFee={deliveryFee}
+          onCloseCart={() => setCartOpen(false)}
         />
       </header>
     </header>

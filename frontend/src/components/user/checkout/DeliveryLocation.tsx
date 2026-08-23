@@ -75,7 +75,6 @@ const DeliveryLocation = () => {
     setSearchValue(location.address);
   }, [location.address]);
 
-
   const handleSearch = async () => {
     if (!searchValue.trim()) return;
 
@@ -108,32 +107,32 @@ const DeliveryLocation = () => {
       {/* Address */}
       <div className="flex items-center gap-1">
         <div className="relative flex-1">
-         <input
-  type="text"
-  value={searchValue}
-  onChange={(e) => setSearchValue(e.target.value)}
-  onKeyDown={(e) => {
-    if (e.key === "Enter") {
-      handleSearch();
-    }
-  }}
-  placeholder="Search or enter your delivery address"
-  className="h-9 w-full rounded-lg border border-slate-400 bg-white px-3 pr-10 text-xs text-gray-900 placeholder:text-slate-400 focus:border-[#581c87] focus:outline-none focus:ring-1 focus:ring-[#581c87]/50"
-/>
+          <input
+            type="text"
+            value={searchValue}
+            onChange={(e) => setSearchValue(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                handleSearch();
+              }
+            }}
+            placeholder="Search or enter your delivery address"
+            className="h-9 w-full rounded-lg border border-slate-400 bg-white px-3 pr-10 text-xs text-gray-900 placeholder:text-slate-400 focus:border-[#581c87] focus:outline-none focus:ring-1 focus:ring-[#581c87]/50"
+          />
 
           <button
-  type="button"
-  onClick={handleSearch}
-  disabled={loading || !searchValue.trim()}
-  className="absolute right-1 top-1/2 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-md bg-red-500 text-white hover:bg-red-600 disabled:cursor-not-allowed disabled:opacity-50"
-  title="Search location"
->
-  {loading ? (
-    <Loader2 className="h-3.5 w-3.5 animate-spin" />
-  ) : (
-    <Search className="h-3.5 w-3.5" />
-  )}
-</button>
+            type="button"
+            onClick={handleSearch}
+            disabled={loading || !searchValue.trim()}
+            className="absolute right-1 top-1/2 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-md bg-red-500 text-white hover:bg-red-600 disabled:cursor-not-allowed disabled:opacity-50"
+            title="Search location"
+          >
+            {loading ? (
+              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+            ) : (
+              <Search className="h-3.5 w-3.5" />
+            )}
+          </button>
         </div>
 
         {/* Current location */}
