@@ -23,7 +23,7 @@ const useOrderApi = () => {
     paymentMethod,
     deliveryAddress,
   }: CreateOrderData) => {
-    const response = await axiosPrivate.post("/orders/create", {
+    const response = await axiosPrivate.post("/orders/createOrder", {
       cartItems: cartItems.map((cartItem) => ({
         itemId: cartItem.item._id,
         quantity: cartItem.quantity,
@@ -35,8 +35,17 @@ const useOrderApi = () => {
     return response.data;
   };
 
+
+   // get orders
+  const getOrders = async () => {
+    const response = await axiosPrivate.get("/order/getOrders");
+
+    return response.data;
+  };
+
   return {
     createOrder,
+    getOrders,
   };
 };
 

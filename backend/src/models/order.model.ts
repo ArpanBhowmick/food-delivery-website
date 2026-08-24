@@ -3,6 +3,7 @@ import mongoose from "mongoose";
 interface IShopOrderItem {
   item: mongoose.Types.ObjectId;
   name: string;
+  image: string;
   price: number;
   quantity: number;
   subtotal: number;
@@ -10,6 +11,7 @@ interface IShopOrderItem {
 
 interface IShopOrder {
   shop: mongoose.Types.ObjectId;
+  owner: mongoose.Types.ObjectId;
   items: IShopOrderItem[];
   itemTotal: number;
   orderStatus:
@@ -66,6 +68,11 @@ const shopOrderItemsSchema = new mongoose.Schema(
       required: true,
     },
 
+    image: {
+  type: String,
+  required: true,
+},
+
     price: {
       type: Number,
       required: true,
@@ -96,6 +103,12 @@ const shopOrderSchema = new mongoose.Schema(
       required: true,
     },
 
+    owner: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      // required: true,
+    },
+
     items: {
       type: [shopOrderItemsSchema],
       required: true,
@@ -120,7 +133,7 @@ const shopOrderSchema = new mongoose.Schema(
       default: "placed",
     },
   },
-  { _id: true },
+  { _id: true, timestamps: true },
 );
 
 // Complete customer order

@@ -3,7 +3,7 @@ import mongoose, { Document } from "mongoose";
 export interface IMenuItem extends Document {
   name: string;
   description: string;
-  image?: {
+  image: {
     url: string;
     publicId: string;
   };
@@ -40,10 +40,12 @@ const itemSchema = new mongoose.Schema<IMenuItem>(
       url: {
         type: String,
         // default: "",
+        required: true,
       },
       publicId: {
         type: String,
         // default: "",
+        required: true,
       },
     },
 

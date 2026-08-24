@@ -20,7 +20,7 @@ import AddItem from "./pages/owner/AddItem";
 import EditItem from "./pages/owner/EditItem";
 import OrderSuccess from "./components/user/checkout/OrderSuccess";
 import MyOrders from "./pages/user/MyOrders";
-// import CheckOut from "./pages/user/Checkout";
+// import MyOrders from "./pages/user/MyOrders";
 
 const App = () => {
   return (

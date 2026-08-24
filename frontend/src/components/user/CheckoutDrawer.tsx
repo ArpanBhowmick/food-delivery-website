@@ -70,7 +70,7 @@ const CheckoutDrawer = ({
     try {
       setIsPlacingOrder(true);
 
-      await createOrder({
+      const result = await createOrder({
         cartItems,
         paymentMethod,
         deliveryAddress: {
@@ -79,6 +79,8 @@ const CheckoutDrawer = ({
           longitude: location.longitude,
         },
       });
+
+      console.log("🚀 Order created:", result);
 
       // Order was successfully created.
       setOrderPlaced(true);

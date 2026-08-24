@@ -38,7 +38,7 @@ app.use("/api/shop", shopRouter)
 app.use("/api/item", itemRouter)
 
 // order routes
-app.use("/api/orders", orderRouter);
+app.use("/api/order", orderRouter);
 
 
 

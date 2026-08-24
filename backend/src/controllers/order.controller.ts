@@ -1,5 +1,4 @@
-﻿
-import mongoose from "mongoose";
+﻿import mongoose from "mongoose";
 import type { Response } from "express";
 import { Item } from "../models/item.modal.js";
 import { Order } from "../models/order.model.js";
@@ -34,7 +33,8 @@ const isObject = (value: unknown): value is Record<string, unknown> =>
 export const createOrder = async (req: AuthRequest, res: Response) => {
   try {
     // Read order details from the request body.
-    const { cartItems, paymentMethod, deliveryAddress } = req.body as CreateOrderRequest;
+    const { cartItems, paymentMethod, deliveryAddress } =
+      req.body as CreateOrderRequest;
 
     // Require an authenticated user.
     if (!req.userId) {
@@ -172,13 +172,13 @@ export const createOrder = async (req: AuthRequest, res: Response) => {
     }
 
     // Confirm that all item shops still exist.
-    const shopIds = [
-      ...new Set(items.map((item) => item.shop.toString())),
-    ];
+    const shopIds = [...new Set(items.map((item) => item.shop.toString()))];
     const shops = await Shop.find({
       _id: { $in: shopIds },
-    }).select("_id");
+    }).select("_id owner");
     const existingShopIds = new Set(shops.map((shop) => shop._id.toString()));
+
+    const shopById = new Map(shops.map((shop) => [shop._id.toString(), shop]));
 
     for (const shopId of shopIds) {
       if (!existingShopIds.has(shopId)) {
@@ -194,9 +194,11 @@ export const createOrder = async (req: AuthRequest, res: Response) => {
       string,
       {
         shop: mongoose.Types.ObjectId;
+        owner: mongoose.Types.ObjectId;
         items: {
           item: mongoose.Types.ObjectId;
           name: string;
+          image: string;
           price: number;
           quantity: number;
           subtotal: number;
@@ -211,11 +213,20 @@ export const createOrder = async (req: AuthRequest, res: Response) => {
       const shopId = item.shop.toString();
       const subtotal = item.price * requestedItem.quantity;
       const existingShopOrder = shopOrderMap.get(shopId);
+      const shop = shopById.get(shopId);
+
+      if (!shop) {
+        return res.status(404).json({
+          success: false,
+          message: `Shop not found: ${shopId}`,
+        });
+      }
 
       if (existingShopOrder) {
         existingShopOrder.items.push({
           item: item._id,
           name: item.name,
+          image: item.image.url,
           price: item.price,
           quantity: requestedItem.quantity,
           subtotal,
@@ -224,10 +235,12 @@ export const createOrder = async (req: AuthRequest, res: Response) => {
       } else {
         shopOrderMap.set(shopId, {
           shop: item.shop,
+          owner: shop.owner,
           items: [
             {
               item: item._id,
               name: item.name,
+              image: item.image.url,
               price: item.price,
               quantity: requestedItem.quantity,
               subtotal,
@@ -285,14 +298,171 @@ export const createOrder = async (req: AuthRequest, res: Response) => {
   }
 };
 
-
-
-
-
-
-
 // get orders by user
 
+// export const getUserOrders = async (req: AuthRequest, res: Response) => {
+//   try {
+//     const userId = req.userId;
+
+//     if (!userId) {
+//       return res.status(401).json({
+//         message: "User id not found",
+//       });
+//     }
+
+//     const orders = await Order.find({ user: userId })
+//       .populate("shopOrders.shop", "name owner")
+//       .populate("shopOrders.owner", "name email mobile")
+//       .sort({ createdAt: -1 })
+//       .lean();
+
+//     return res.status(200).json({
+//       success: true,
+//       orders,
+//     });
+//   } catch (error) {
+//     console.error("getMyOrders:", error);
+
+//     return res.status(500).json({
+//       success: false,
+//       message: "Failed to fetch orders",
+//     });
+//   }
+// };
+
+// get owner orders
+
+// export const getOwnerOrders = async (req: AuthRequest, res: Response) => {
+//   try {
+//     const ownerId = req.userId;
+
+//     if (!ownerId) {
+//       return res.status(401).json({
+//         success: false,
+//         message: "User is not authenticated",
+//       });
+//     }
+
+//     const orders = await Order.find(
+//       {
+//         "shopOrders.owner": ownerId,
+//       },
+//       {
+//         shopOrders: {
+//           $elemMatch: {
+//             owner: ownerId,
+//           },
+//         },
+//       },
+//     )
+//       .populate("user", "name email mobile")
+//       .populate("shopOrders.shop", "name owner")
+//       .sort({ createdAt: -1 })
+//       .lean();
+
+//     return res.status(200).json({
+//       success: true,
+//       orders,
+//     });
+
+//   } catch (error) {
+//     console.error("getOwnerOrders:", error);
+
+//     return res.status(500).json({
+//       success: false,
+//       message: "Failed to fetch owner orders",
+//     });
+//   }
+// };
 
 
 
+
+
+// Fetch orders for users and owners.
+
+export const getOrders = async (req: AuthRequest, res: Response) => {
+  try {
+    // Read the authenticated user's ID.
+    const userId = req.userId;
+
+    // Require authentication.
+    if (!userId) {
+      return res.status(401).json({
+        success: false,
+        message: "User is not authenticated",
+      });
+    }
+
+    // Load the user's role to select the correct order query.
+    const user = await User.findById(userId).select("role");
+
+    // Ensure the authenticated user still exists.
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    // Select only the order fields needed by the clients.
+    const orderFields =
+      "user shopOrders paymentMethod paymentStatus deliveryAddress pricing orderStatus";
+
+    if (user.role === "owner") {
+      // Find orders containing at least one shop owned by this owner.
+      const orders = await Order.find({
+        "shopOrders.owner": userId,
+      })
+        .select(orderFields)
+        .sort({ createdAt: -1 })
+        .lean();
+
+      // Keep every shop order belonging to this owner.
+      const ownerOrders = orders.map((order) => ({
+        ...order,
+        shopOrders: order.shopOrders.filter(
+          (shopOrder) => shopOrder.owner.toString() === userId,
+        ),
+      }));
+
+      // Populate customer, shop, owner, and item details.
+      await Order.populate(ownerOrders, [
+        { path: "user", select: "name email mobile" },
+        { path: "shopOrders.shop", select: "name owner" },
+        { path: "shopOrders.owner", select: "name email mobile" },
+        { path: "shopOrders.items.item", select: "name image price" },
+      ]);
+
+      // Return the owner's filtered orders.
+      return res.status(200).json({
+        success: true,
+        orders: ownerOrders,
+      });
+    }
+
+    // Find all orders placed by the authenticated user.
+    const orders = await Order.find({ user: userId })
+      .select(orderFields)
+      .populate("user", "name email mobile")
+      .populate("shopOrders.shop", "name owner")
+      .populate("shopOrders.owner", "name email mobile")
+      .populate("shopOrders.items.item", "name image price")
+      .sort({ createdAt: -1 })
+      .lean();
+
+    // Return the user's complete orders.
+    return res.status(200).json({
+      success: true,
+      orders,
+    });
+  } catch (error) {
+    // Handle unexpected database or population errors.
+    console.error("getOrders:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Failed to fetch orders",
+    });
+  }
+};
