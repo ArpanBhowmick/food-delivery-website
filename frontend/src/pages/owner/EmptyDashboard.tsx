@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 
 import restaurantImage from "../../assets/restaurant.png";
+import { Link } from "react-router-dom";
 
 export default function EmptyDashboard() {
   return (
@@ -38,10 +39,10 @@ export default function EmptyDashboard() {
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4">
-            <button className="flex items-center justify-center gap-2 bg-purple-800 hover:bg-purple-900 text-white font-medium px-6 py-3 rounded-lg transition-colors cursor-pointer">
+            <Link to="/owner/shop/create" className="flex items-center justify-center gap-2 bg-purple-800 hover:bg-purple-900 text-white font-medium px-6 py-3 rounded-lg transition-colors cursor-pointer">
               <Plus className="w-5 h-5" />
               Get Started
-            </button>
+            </Link>
 
             <svg
               className="absolute right-10 top-10 opacity-20"

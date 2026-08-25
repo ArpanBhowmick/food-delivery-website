@@ -26,7 +26,7 @@ const OrderSuccess = () => {
       {/* Action Buttons */}
       <div className="flex flex-col sm:flex-row gap-3">
         <button
-          onClick={() => navigate("/myOrders")}
+          onClick={() => navigate("/account")}
           className="bg-[#fc5a32] hover:bg-[#e84c25] text-white font-medium py-3 px-8 rounded-lg transition duration-200 shadow-sm"
         >
           Back to my orders

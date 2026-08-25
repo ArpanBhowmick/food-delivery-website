@@ -143,6 +143,11 @@ export const editShop = async (req: AuthRequest, res: Response) => {
   }
 };
 
+
+// delete shop
+
+
+
 // get all owner shops
 export const getOwnerShops = async (req: AuthRequest, res: Response) => {
   try {

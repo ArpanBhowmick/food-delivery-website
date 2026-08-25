@@ -121,7 +121,7 @@ export default function UserNavbar() {
             </span> */}
           </button>
 
-          <Link to="/myOrders" className="hidden md:flex items-center gap-1.5 text-[12px] font-medium text-white bg-[#7E22CE] hover:opacity-90 transition-opacity px-3 py-2.5 rounded-md cursor-pointer">
+          <Link to="/account" className="hidden md:flex items-center gap-1.5 text-[12px] font-medium text-white bg-[#7E22CE] hover:opacity-90 transition-opacity px-3 py-2.5 rounded-md cursor-pointer">
             My Orders
           </Link>
 

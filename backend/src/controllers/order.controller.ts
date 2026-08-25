@@ -407,7 +407,7 @@ export const getOrders = async (req: AuthRequest, res: Response) => {
 
     // Select only the order fields needed by the clients.
     const orderFields =
-      "user shopOrders paymentMethod paymentStatus deliveryAddress pricing orderStatus";
+      "user shopOrders paymentMethod paymentStatus deliveryAddress pricing orderStatus createdAt";
 
     if (user.role === "owner") {
       // Find orders containing at least one shop owned by this owner.

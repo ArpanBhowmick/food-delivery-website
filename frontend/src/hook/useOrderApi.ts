@@ -23,7 +23,7 @@ const useOrderApi = () => {
     paymentMethod,
     deliveryAddress,
   }: CreateOrderData) => {
-    const response = await axiosPrivate.post("/orders/createOrder", {
+    const response = await axiosPrivate.post("/order/createOrder", {
       cartItems: cartItems.map((cartItem) => ({
         itemId: cartItem.item._id,
         quantity: cartItem.quantity,
