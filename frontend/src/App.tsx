@@ -21,7 +21,10 @@ import EditItem from "./pages/owner/EditItem";
 import OrderSuccess from "./components/user/checkout/OrderSuccess";
 import MyOrders from "./components/user/account/MyOrders";
 import Account from "./pages/user/Account";
-// import MyOrders from "./pages/user/MyOrders";
+import OwnerOrders from "./pages/owner/OwnerOrders";
+// import OwnerOrders from "./pages/owner/OwnerOrders";
+
+
 
 const App = () => {
   return (
@@ -76,6 +79,8 @@ const App = () => {
                 path="owner/shop/:shopId/item/edit/:itemId"
                 element={<EditItem />}
               />
+
+              <Route path="/owner/orders" element={<OwnerOrders />} />
             </Route>
           </Route>
 

@@ -1,15 +1,21 @@
 import mongoose, { Document } from "mongoose";
 
+interface IGeoLocation {
+  type: "Point";
+  coordinates: [number, number];
+}
+
 export interface IShop extends Document {
   name: string;
   image?: {
-    url: string ;
+    url: string;
     publicId: string;
   };
   owner: mongoose.Types.ObjectId;
   city: string;
   state: string;
   address: string;
+  location: IGeoLocation;
 }
 
 const shopSchema = new mongoose.Schema<IShop>(
@@ -51,13 +57,22 @@ const shopSchema = new mongoose.Schema<IShop>(
       required: true,
     },
 
-    // items: [{
-    //     type: mongoose.Schema.Types.ObjectId,
-    //     ref: "Item"
-    // }]
+    location: {
+      type: {
+        type: String,
+        enum: ["Point"],
+        required: true,
+      },
+      coordinates: {
+        type: [Number],
+        required: true,
+      },
+    },
   },
   { timestamps: true },
 );
+
+shopSchema.index({ location: "2dsphere" });
 
 export const Shop = mongoose.model<IShop>("Shop", shopSchema);
 

@@ -1,7 +1,7 @@
 
 
 import type { IShop } from "@/types/shop.types";
-import { Eye, PenLine, Star, Trash2 } from "lucide-react";
+import { Star } from "lucide-react";
 import { Link } from "react-router-dom";
 
 
@@ -71,16 +71,19 @@ const ShopCard = ({ shop }: ShopCardProps) => {
       </div>
 
       {/* Card Actions (Footer) */}
-      <div className="grid grid-cols-3 border-t border-gray-300">
-        <Link to={`/owner/shop/${shop._id}`} className="py-3 flex justify-center items-center text-slate-700 hover:bg-slate-50 border-r border-gray-300 transition-colors cursor-pointer">
-          <Eye size={18} />
+      <div className="grid grid-cols-2 gap-3 border-t border-gray-300 p-3">
+        <Link
+          to={`/owner/shop/${shop._id}`}
+          className="py-2 flex justify-center items-center text-slate-700 border border-gray-300 rounded-md hover:bg-slate-50 transition-colors cursor-pointer"
+        >
+          Manage Shop
         </Link>
-        <Link to={`/owner/shop/edit/${shop._id}`} className="py-3 flex justify-center items-center text-slate-700 hover:bg-slate-50 border-r border-gray-300 transition-colors cursor-pointer">
-          <PenLine size={18} />
+        <Link
+          to={`/owner/shop/edit/${shop._id}`}
+          className="py-2 flex justify-center items-center text-slate-700 border border-gray-300 rounded-md hover:bg-slate-50 transition-colors cursor-pointer"
+        >
+          Edit Detail
         </Link>
-        <button className="py-3 flex justify-center items-center text-red-500 hover:bg-red-50 hover:text-red-600 border-r border-gray-300 transition-colors cursor-pointer">
-          <Trash2 size={18} />
-        </button>
       </div>
     </div>
     

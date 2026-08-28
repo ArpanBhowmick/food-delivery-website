@@ -35,10 +35,23 @@ const useOrderApi = () => {
     return response.data;
   };
 
-
-   // get orders
+  // get orders
   const getOrders = async () => {
     const response = await axiosPrivate.get("/order/getOrders");
+
+    return response.data;
+  };
+
+  // update order status
+  const updateOrderStatus = async (
+    orderId: string,
+    shopOrderId: string,
+    status: string,
+  ) => {
+    const response = await axiosPrivate.patch(
+      `/order/${orderId}/${shopOrderId}/status`,
+      { status },
+    );
 
     return response.data;
   };
@@ -46,6 +59,7 @@ const useOrderApi = () => {
   return {
     createOrder,
     getOrders,
+    updateOrderStatus,
   };
 };
 

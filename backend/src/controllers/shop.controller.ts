@@ -5,14 +5,15 @@ import {
   uploadToCloudinary,
 } from "../util/cloudinaryUploadAndDel.js";
 import { Shop } from "../models/shop.modal.js";
-import { Item } from "../models/item.modal.js";
+// import { Item } from "../models/item.modal.js";
 
 // create shop
 export const createShop = async (req: AuthRequest, res: Response) => {
   try {
-    const { name, state, city, address } = req.body;
+    const { name, state, city, address, latitude, longitude, } = req.body;
 
-    if (!name || !state || !city || !address) {
+    if (!name || !state || !city || !address || latitude === undefined ||
+  longitude === undefined) {
       return res.status(400).json({
         success: false,
         message: "Please fill all the fields",
@@ -26,6 +27,7 @@ export const createShop = async (req: AuthRequest, res: Response) => {
       });
     }
 
+    console.time("duplicate check");
     const existingShop = await Shop.findOne({
       owner: req.userId,
       name: name.trim(),
@@ -42,6 +44,9 @@ export const createShop = async (req: AuthRequest, res: Response) => {
 
     let image;
 
+    console.timeEnd("duplicate check");
+
+console.time("cloudinary upload");
     if (req.file) {
       const uploadedImage = await uploadToCloudinary(req.file.path);
 
@@ -51,16 +56,30 @@ export const createShop = async (req: AuthRequest, res: Response) => {
       };
     }
 
+    console.timeEnd("cloudinary upload");
+
+console.time("shop create");
+
     const shop = await Shop.create({
       name,
       state,
       city,
       address,
       owner: req.userId,
+       location: {
+    type: "Point",
+    coordinates: [Number(longitude), Number(latitude)],
+  },
       ...(image && { image }), //onlyif the image exist
     });
 
+console.timeEnd("shop create");
+
+console.time("populate");
+
     await shop.populate("owner");
+
+    console.timeEnd("populate");
 
     return res.status(201).json({
       success: true,

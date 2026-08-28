@@ -2,8 +2,8 @@ import EmptyDashboard from "./EmptyDashboard";
 
 import { useSelector } from "react-redux";
 import type { RootState } from "@/store/store";
+import MyShops from "./DashboardContent2";
 
-import DashboardContent2 from "./DashboardContent2";
 
 const OwnerDashboard = () => {
   const shops = useSelector((state: RootState) => state.shop.shops);
@@ -14,7 +14,7 @@ const OwnerDashboard = () => {
 
   return (
     <div>
-      <DashboardContent2 />
+      <MyShops />
       {/* <ShopDetails /> */}
     </div>
   );

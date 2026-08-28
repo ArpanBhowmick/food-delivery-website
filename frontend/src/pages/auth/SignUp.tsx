@@ -195,7 +195,7 @@ export default function SignUpPage() {
             <div className="space-y-1.5 pt-0 sm:pt-1 lg:pt-2">
               <Label>Role Selection</Label>
               <div className="flex w-full items-center rounded-md border border-slate-300 p-1">
-                {(["user", "owner", "delivery boy"] as const).map((r) => (
+                {(["user", "owner", "deliveryBoy"] as const).map((r) => (
                   <button
                     key={r}
                     type="button"

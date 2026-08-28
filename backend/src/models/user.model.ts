@@ -10,6 +10,11 @@ interface ILocation {
   longitude: number | null;
 }
 
+interface IGeoLocation {
+  type: "Point";
+  coordinates: [number, number];
+}
+
 export interface IUser extends Document {
   name: string;
   email: string;
@@ -18,6 +23,7 @@ export interface IUser extends Document {
   password?: string;
   provider: "local" | "google";
   defaultAddress?: ILocation;
+  currentLocation?: IGeoLocation;
 }
 
 const userSchema = new mongoose.Schema<IUser>(
@@ -87,8 +93,20 @@ const userSchema = new mongoose.Schema<IUser>(
         default: null,
       },
     },
+
+    currentLocation: {
+  type: {
+    type: String,
+    enum: ["Point"],
+  },
+  coordinates: {
+    type: [Number],
+  },
+},
   },
   { timestamps: true },
 );
+
+userSchema.index({ currentLocation: "2dsphere" });
 
 export const User = mongoose.model<IUser>("User", userSchema);

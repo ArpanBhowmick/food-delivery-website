@@ -26,6 +26,9 @@ interface CreateOrderRequest {
   deliveryAddress?: unknown;
 }
 
+// Defines the owner-controlled status flow.
+type OwnerOrderStatus = "placed" | "preparing" | "outForDelivery";
+
 // Checks whether a value is a non-null object.
 const isObject = (value: unknown): value is Record<string, unknown> =>
   typeof value === "object" && value !== null;
@@ -375,10 +378,6 @@ export const createOrder = async (req: AuthRequest, res: Response) => {
 //   }
 // };
 
-
-
-
-
 // Fetch orders for users and owners.
 
 export const getOrders = async (req: AuthRequest, res: Response) => {
@@ -463,6 +462,147 @@ export const getOrders = async (req: AuthRequest, res: Response) => {
     return res.status(500).json({
       success: false,
       message: "Failed to fetch orders",
+    });
+  }
+};
+
+// order status change
+
+export const updateOrderStatus = async (req: AuthRequest, res: Response) => {
+  try {
+    // Read the order identifiers and requested status.
+    const { orderId, shopOrderId } = req.params;
+    const { status } = req.body as { status?: unknown };
+
+    // Require an authenticated user.
+    if (!req.userId) {
+      return res.status(401).json({
+        success: false,
+        message: "User is not authenticated",
+      });
+    }
+
+    // Validate the order identifiers.
+    if (
+      typeof orderId !== "string" ||
+      !mongoose.Types.ObjectId.isValid(orderId) ||
+      typeof shopOrderId !== "string" ||
+      !mongoose.Types.ObjectId.isValid(shopOrderId)
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: "Valid order and shop order ids are required",
+      });
+    }
+
+    // Validate the requested status.
+    if (
+      status !== "placed" &&
+      status !== "preparing" &&
+      status !== "outForDelivery"
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: "A valid order status is required",
+      });
+    }
+
+    // Load the requested order.
+    const order = await Order.findById(orderId);
+
+    if (!order) {
+      return res.status(404).json({
+        success: false,
+        message: "Order not found",
+      });
+    }
+
+    // Find the requested shop order.
+    const shopOrder = order.shopOrders.find(
+      (candidate) =>
+        (
+          candidate as typeof candidate & { _id: mongoose.Types.ObjectId }
+        )._id.toString() === shopOrderId,
+    );
+
+    if (!shopOrder) {
+      return res.status(404).json({
+        success: false,
+        message: "Shop order not found",
+      });
+    }
+
+    // Verify that the owner manages this shop order.
+    if (shopOrder.owner.toString() !== req.userId) {
+      return res.status(403).json({
+        success: false,
+        message: "You are not authorized to update this shop order",
+      });
+    }
+
+    // Check that the status follows the intended flow.
+    const statusFlow: OwnerOrderStatus[] = [
+      "placed",
+      "preparing",
+      "outForDelivery",
+    ];
+    const currentStatusIndex = statusFlow.indexOf(
+      shopOrder.orderStatus as OwnerOrderStatus,
+    );
+    const nextStatus = status as OwnerOrderStatus;
+    const nextStatusIndex = statusFlow.indexOf(nextStatus);
+
+    if (
+      currentStatusIndex === -1 ||
+      nextStatusIndex !== currentStatusIndex + 1
+    ) {
+      return res.status(400).json({
+        success: false,
+        message:
+          "Order status must follow placed, preparing, and outForDelivery",
+      });
+    }
+
+   
+    // Update the selected shop order's status.
+    shopOrder.orderStatus = nextStatus;
+
+    // Calculate the overall order status from all shop orders.
+    const shopOrderStatuses = order.shopOrders.map(
+      (shopOrder) => shopOrder.orderStatus,
+    );
+
+    if (shopOrderStatuses.every((status) => status === "placed")) {
+      order.orderStatus = "placed";
+    } else if (
+      shopOrderStatuses.every((status) => status === "outForDelivery")
+    ) {
+      order.orderStatus = "outForDelivery";
+    } else if (
+      shopOrderStatuses.every(
+        (status) => status === "preparing" || status === "outForDelivery",
+      )
+    ) {
+      order.orderStatus = "preparing";
+    } else {
+      order.orderStatus = "placed";
+    }
+
+    // Save both the shop order status and overall order status.
+    await order.save();
+    // Return the updated shop order.
+    return res.status(200).json({
+      success: true,
+      message: "Shop order status updated successfully",
+      shopOrder,
+    });
+  } catch (error) {
+    // Handle unexpected update errors.
+    console.error("updateOrderStatus:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Failed to update shop order status",
     });
   }
 };

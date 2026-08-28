@@ -16,9 +16,8 @@ interface IShopOrder {
   itemTotal: number;
   orderStatus:
     | "placed"
-    | "confirmed"
     | "preparing"
-    | "ready"
+    | "outForDelivery"
     | "delivered"
     | "cancelled";
 }
@@ -47,9 +46,8 @@ export interface IOrder {
 
   orderStatus:
     | "placed"
-    | "confirmed"
     | "preparing"
-    | "ready"
+    | "outForDelivery"
     | "delivered"
     | "cancelled";
 }
@@ -123,10 +121,9 @@ const shopOrderSchema = new mongoose.Schema(
     orderStatus: {
       type: String,
       enum: [
-        "placed",
-        "confirmed",
+        "placed",      
         "preparing",
-        "ready",
+        "outForDelivery",
         "delivered",
         "cancelled",
       ],
@@ -208,10 +205,9 @@ const orderSchema = new mongoose.Schema(
     orderStatus: {
       type: String,
       enum: [
-        "placed",
-        "confirmed",
+        "placed",      
         "preparing",
-        "ready",
+        "outForDelivery",
         "delivered",
         "cancelled",
       ],

@@ -4,9 +4,7 @@ import {
   UploadCloud,
   MapPin,
   Building2,
-  CheckCircle2,
   Image as ImageIcon,
-  Info,
 } from "lucide-react";
 import prePreview from "../../assets/pre-preview2.png";
 import { useForm } from "react-hook-form";
@@ -15,22 +13,32 @@ import {
   type CreateRestaurantForm,
 } from "@/schema/restaurantSchema";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { states, cities } from "@/data/locations";
-// import TipsCard from "@/components/owner/TipsCard";
+
 import { useShopApi } from "@/hook/useShopApi";
 import axios from "axios";
 import { Link, useNavigate } from "react-router-dom";
 import TipsCard from "@/components/owner/TipsCard";
+import useForwardGeocode from "@/hook/useForwardGeocode";
+import useReverseGeocode from "@/hook/useReverseGeocode";
+import LocationMap from "@/components/map/LocationMap";
 
 const CreateRestaurant = () => {
-
   const navigate = useNavigate();
 
   const { createShop } = useShopApi();
 
+  const { searchLocation } = useForwardGeocode();
+  const { reverseGeocode } = useReverseGeocode();
 
   const [previewUrl, setPreviewUrl] = useState(prePreview);
+
+  const [latitude, setLatitude] = useState<number>(22.5726);
+  const [longitude, setLongitude] = useState<number>(88.3639);
+
+  const [availableStates, setAvailableStates] = useState(states);
+  const [availableCities, setAvailableCities] = useState<string[]>([]);
 
   const {
     register,
@@ -55,6 +63,9 @@ const CreateRestaurant = () => {
   // Reference to the hidden file input
   // Used to open the file picker programmatically
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const skipStateCityGeocodeRef = useRef(false);
+  const skipAddressGeocodeRef = useRef(false);
 
   // Handle restaurant image selection
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -87,38 +98,43 @@ const CreateRestaurant = () => {
   // Reset city whenever the state changes
   useEffect(() => {
     setValue("city", "");
+
+    if (!state) {
+      setAvailableCities([]);
+      return;
+    }
+
+    const stateCities = cities[state as keyof typeof cities];
+
+    setAvailableCities(stateCities ? [...stateCities] : []);
   }, [state, setValue]);
 
-  // TODO:
-  // This works because the form currently contains only strings and File.
-  // If nested objects or arrays are added later, update the FormData conversion logic.
   // Handle form submission
 
   const onSubmit = async (data: CreateRestaurantForm) => {
-
     try {
-      
- const formData = new FormData();
+      const formData = new FormData();
 
-    Object.entries(data).forEach(([key, value]) => {
-      if (value !== undefined && value !== null) {
-        formData.append(key, value);
-      }
-    });
+      Object.entries(data).forEach(([key, value]) => {
+        if (value !== undefined && value !== null) {
+          formData.append(key, value);
+        }
+      });
 
-    await createShop(formData);
+      formData.append("latitude", latitude.toString());
+      formData.append("longitude", longitude.toString());
 
-    reset();
-    setPreviewUrl(prePreview);
-     navigate("/owner");
+      await createShop(formData);
 
+      reset();
+      setPreviewUrl(prePreview);
+      navigate("/owner");
     } catch (error) {
-       if (axios.isAxiosError(error)) {
-    console.log(error.response?.status);
-    console.log(error.response?.data.message);
-  }
+      if (axios.isAxiosError(error)) {
+        console.log(error.response?.status);
+        console.log(error.response?.data.message);
+      }
     }
-   
   };
 
   const handleCancel = () => {
@@ -126,11 +142,96 @@ const CreateRestaurant = () => {
     setPreviewUrl(prePreview);
   };
 
+  // Handle map location change
+
+  const handleMapLocationChange = useCallback(
+    async (latitude: number, longitude: number) => {
+      setLatitude(latitude);
+      setLongitude(longitude);
+
+      const location = await reverseGeocode(latitude, longitude);
+
+      if (!location) return;
+
+      if (location.state) {
+        setAvailableStates((prev) => {
+          if (prev.includes(location.state)) {
+            return prev;
+          }
+
+          return [...prev, location.state];
+        });
+      }
+
+      skipStateCityGeocodeRef.current = true;
+      skipAddressGeocodeRef.current = true;
+
+      setValue("state", location.state);
+
+      setAvailableCities((prev) => {
+        if (!location.city) return prev;
+
+        if (prev.includes(location.city)) {
+          return prev;
+        }
+
+        return [...prev, location.city];
+      });
+
+      setValue("city", location.city);
+      setValue("address", location.address);
+    },
+    [],
+  );
+
+  useEffect(() => {
+    if (skipStateCityGeocodeRef.current) {
+      skipStateCityGeocodeRef.current = false;
+      return;
+    }
+
+    if (!state || !city) return;
+
+    const updateMapLocation = async () => {
+      const location = await searchLocation(`${city}, ${state}`);
+
+      if (!location) return;
+
+      setLatitude(location.latitude);
+      setLongitude(location.longitude);
+    };
+
+    updateMapLocation();
+  }, [state, city]);
+
+  useEffect(() => {
+    if (skipAddressGeocodeRef.current) {
+      skipAddressGeocodeRef.current = false;
+      return;
+    }
+
+    if (!address || !city || !state) return;
+
+    const timer = setTimeout(async () => {
+      const location = await searchLocation(`${address}, ${city}, ${state}`);
+
+      if (!location) return;
+
+      setLatitude(location.latitude);
+      setLongitude(location.longitude);
+    }, 700);
+
+    return () => clearTimeout(timer);
+  }, [address]);
+
   return (
     <div className="min-h-screen bg-[#f8f9fc] p-6 font-sans text-slate-800">
       <div className="max-w-7xl mx-auto">
         {/* Back Link */}
-        <Link to="/owner" className="flex items-center text-[#581c87] text-sm font-semibold mb-6 hover:underline">
+        <Link
+          to="/owner"
+          className="flex items-center text-[#581c87] text-sm font-semibold mb-6 hover:underline"
+        >
           <ArrowLeft className="w-4 h-4 mr-2" />
           Back to Dashboard
         </Link>
@@ -206,7 +307,7 @@ const CreateRestaurant = () => {
                       className="w-full rounded-lg border border-slate-400 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#581c87] text-slate-500 appearance-none bg-white"
                     >
                       <option value="">Select state</option>
-                      {states.map((state) => (
+                      {availableStates.map((state) => (
                         <option key={state} value={state}>
                           {state}
                         </option>
@@ -232,12 +333,11 @@ const CreateRestaurant = () => {
                       className="w-full rounded-lg border border-slate-400 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#581c87] text-slate-500 appearance-none bg-white"
                     >
                       <option value="">Select city</option>
-                      {state &&
-                        cities[state as keyof typeof cities].map((city) => (
-                          <option key={city} value={city}>
-                            {city}
-                          </option>
-                        ))}
+                      {availableCities.map((city) => (
+                        <option key={city} value={city}>
+                          {city}
+                        </option>
+                      ))}
                     </select>
                     {errors.city && (
                       <p className="mt-1 text-sm text-red-500">
@@ -272,6 +372,12 @@ const CreateRestaurant = () => {
                     )}
                   </div>
                 </div>
+
+                <LocationMap
+                  latitude={latitude}
+                  longitude={longitude}
+                  onLocationChange={handleMapLocationChange}
+                />
 
                 {/* Restaurant Image */}
                 <div>
@@ -344,17 +450,6 @@ const CreateRestaurant = () => {
                   </button>
                 </div>
               </form>
-
-              {/* Form Actions */}
-              {/* <div className="mt-8 flex items-center justify-between pt-6 border-t border-slate-200">
-                <button className="px-6 py-2.5 rounded-lg border border-slate-400 text-slate-700 font-medium text-sm hover:bg-slate-50 transition-colors">
-                  Cancel
-                </button>
-                <button className="px-6 py-2.5 rounded-lg bg-[#581c87] text-white font-medium text-sm hover:bg-[#4c1775] transition-colors flex items-center">
-                  Next: Cuisine & Contact
-                  <ArrowLeft className="w-4 h-4 ml-2 rotate-180" />
-                </button>
-              </div> */}
             </div>
           </div>
 
@@ -379,11 +474,6 @@ const CreateRestaurant = () => {
                     alt=""
                     className="w-full h-full object-cover "
                   />
-
-                  {/* Profile Image Overlay */}
-                  {/* <div className="absolute -bottom-8 w-16 h-16 bg-slate-100 rounded-full border-4 border-white shadow-sm flex items-center justify-center">
-                    <ImageIcon className="w-6 h-6 text-slate-400" />
-                  </div> */}
                 </div>
 
                 {/* Preview Content */}

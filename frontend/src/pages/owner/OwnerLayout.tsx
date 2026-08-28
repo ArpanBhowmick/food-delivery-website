@@ -34,18 +34,18 @@ const OwnerLayout = () => {
   }
 
   return (
-    <>
-      <OwnerNavbar />
+  <div className="h-screen flex flex-col overflow-hidden bg-[#f8f9fa] font-sans text-gray-900">
+    <OwnerNavbar />
 
-      <div className="flex min-h-screen bg-[#f8f9fa] font-sans text-gray-900">
-        <OwnerSidebar />
+    <div className="flex flex-1 min-h-0 overflow-hidden">
+      <OwnerSidebar />
 
-        <main className="flex-1 min-w-0 overflow-x-hidden p-4 sm:p-6 lg:p-8">
-          <Outlet />
-        </main>
-      </div>
-    </>
-  );
+      <main className="flex-1 min-w-0 min-h-0 overflow-y-auto overflow-x-hidden p-4 sm:p-6 lg:p-8">
+        <Outlet />
+      </main>
+    </div>
+  </div>
+);
 };
 
 export default OwnerLayout;

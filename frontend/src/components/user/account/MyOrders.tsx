@@ -151,7 +151,7 @@ const MyOrders = () => {
                   <div className="p-5 sm:p-4 flex items-start justify-between bg-white">
                     <div>
                       <h3 className="flex items-center gap-1.5 font-semibold text-slate-900 text-sm">
-                        Order{" "}
+                        Order: {" "}
                         {order.orderStatus.charAt(0).toUpperCase() +
                           order.orderStatus.slice(1)}
                         {order.orderStatus === "delivered" ? (

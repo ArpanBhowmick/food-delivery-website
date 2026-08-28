@@ -1,47 +1,86 @@
-import { BarChart3, ClipboardList, LayoutDashboard, Settings, Store } from 'lucide-react';
-import React from 'react'
-
-
-const sidebarItems = [
-  { icon: LayoutDashboard, label: 'Dashboard', active: false },
-  { icon: Store, label: 'My Shops', active: true },
-  { icon: ClipboardList, label: 'Orders', active: false },
-  
-  { icon: BarChart3, label: 'Analytics', active: false },
-  { icon: Settings, label: 'Settings', active: false },
-];
+import {
+  BarChart3,
+  ClipboardList,
+  Settings,
+  Store,
+} from "lucide-react";
+import { Link, useLocation } from "react-router-dom";
 
 const OwnerSidebar = () => {
+  const location = useLocation();
+
   return (
-    
-    <>
-    {/* Sidebar */}
-      <aside className="w-16 lg:w-64 bg-white border-r border-gray-300 flex-shrink-0">
-        <nav className="p-2 lg:p-4 space-y-1">
-          {sidebarItems.map((item, index) => {
-            const Icon = item.icon;
-            return (
-              <a
-                key={index}
-                href="#"
-                title={item.label}
-                className={`flex items-center justify-center lg:justify-start gap-3 px-3 py-2.5 rounded-md text-sm font-medium transition-colors cursor-pointer ${
-                  item.active 
-                    ? 'bg-[#581c87]/10 text-[#581c87]' 
-                    : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900'
-                }`}
-              >
-                <Icon size={20} className={`shrink-0 ${item.active ? 'text-[#581c87]' : 'text-gray-500'}`} />
-                <span className="hidden lg:inline">{item.label}</span>
-              </a>
-            );
-          })}
-        </nav>
-      </aside>
-    </>
-    
+    <aside className="h-[calc(100vh-5rem)] w-16 flex-shrink-0 overflow-y-auto border-r border-gray-300 bg-white lg:w-64">
+      <nav className="p-2 lg:p-4 space-y-1">
 
-  )
-}
+        {/* Dashboard */}
+        {/* <Link
+          to="/owner"
+          className={`flex items-center justify-center lg:justify-start gap-3 px-3 py-2.5 rounded-md text-sm font-medium transition-colors ${
+            location.pathname === "/owner"
+              ? "bg-[#581c87]/10 text-[#581c87]"
+              : "text-gray-700 hover:bg-gray-100 hover:text-gray-900"
+          }`}
+        >
+          <LayoutDashboard size={20} />
+          <span className="hidden lg:inline">Dashboard</span>
+        </Link> */}
 
-export default OwnerSidebar
+        {/* My Shops */}
+        <Link
+          to="/owner"
+          className={`flex items-center justify-center lg:justify-start gap-3 px-3 py-2.5 rounded-md text-sm font-medium transition-colors ${
+            location.pathname === "/owner"
+              ? "bg-[#581c87]/10 text-[#581c87]"
+              : "text-gray-700 hover:bg-gray-100 hover:text-gray-900"
+          }`}
+        >
+          <Store size={20} />
+          <span className="hidden lg:inline">My Shops</span>
+        </Link>
+
+        {/* Orders */}
+        <Link
+          to="/owner/orders"
+          className={`flex items-center justify-center lg:justify-start gap-3 px-3 py-2.5 rounded-md text-sm font-medium transition-colors ${
+            location.pathname === "/owner/orders"
+              ? "bg-[#581c87]/10 text-[#581c87]"
+              : "text-gray-700 hover:bg-gray-100 hover:text-gray-900"
+          }`}
+        >
+          <ClipboardList size={20} />
+          <span className="hidden lg:inline">Orders</span>
+        </Link>
+
+        {/* Analytics */}
+        <Link
+          to="/owner/analytics"
+          className={`flex items-center justify-center lg:justify-start gap-3 px-3 py-2.5 rounded-md text-sm font-medium transition-colors ${
+            location.pathname === "/owner/analytics"
+              ? "bg-[#581c87]/10 text-[#581c87]"
+              : "text-gray-700 hover:bg-gray-100 hover:text-gray-900"
+          }`}
+        >
+          <BarChart3 size={20} />
+          <span className="hidden lg:inline">Analytics</span>
+        </Link>
+
+        {/* Settings */}
+        <Link
+          to="/owner/settings"
+          className={`flex items-center justify-center lg:justify-start gap-3 px-3 py-2.5 rounded-md text-sm font-medium transition-colors ${
+            location.pathname === "/owner/settings"
+              ? "bg-[#581c87]/10 text-[#581c87]"
+              : "text-gray-700 hover:bg-gray-100 hover:text-gray-900"
+          }`}
+        >
+          <Settings size={20} />
+          <span className="hidden lg:inline">Settings</span>
+        </Link>
+
+      </nav>
+    </aside>
+  );
+};
+
+export default OwnerSidebar;

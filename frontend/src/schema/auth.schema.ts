@@ -24,7 +24,7 @@ export const registerSchema = z
 
     confirmPassword: z.string(),
 
-    role: z.enum(["user", "owner", "delivery boy"]),
+    role: z.enum(["user", "owner", "deliveryBoy"]),
   })
   .refine((data) => data.password === data.confirmPassword, {
     path: ["confirmPassword"],
