@@ -8,6 +8,7 @@ interface IBroadcast {
 
 export interface IDeliveryAssignment {
   orderId: mongoose.Types.ObjectId;
+  shopId: mongoose.Types.ObjectId;
   shopOrderId: mongoose.Types.ObjectId;
 
   assignedTo: mongoose.Types.ObjectId | null;

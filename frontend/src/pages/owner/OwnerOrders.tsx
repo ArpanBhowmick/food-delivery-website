@@ -108,8 +108,8 @@ export default function OwnerOrders() {
     shopOrderId: string,
     status: OrderStatus
   ) => {
-    await updateOrderStatus(orderId, shopOrderId, status);
-
+    const response = await updateOrderStatus(orderId, shopOrderId, status);
+console.log("Status update response:", response);
      setOrderStatuses((prev) => ({
       ...prev,
       [shopOrderId]: status,

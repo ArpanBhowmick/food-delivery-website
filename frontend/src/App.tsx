@@ -22,9 +22,8 @@ import OrderSuccess from "./components/user/checkout/OrderSuccess";
 import MyOrders from "./components/user/account/MyOrders";
 import Account from "./pages/user/Account";
 import OwnerOrders from "./pages/owner/OwnerOrders";
+import DeliveryLayout from "./pages/deliveryBoy/DeliveryLayout";
 // import OwnerOrders from "./pages/owner/OwnerOrders";
-
-
 
 const App = () => {
   return (
@@ -53,9 +52,9 @@ const App = () => {
 
           {/* Protected user pages */}
           <Route element={<UserLayout />}>
-             <Route path="/orderSuccess" element={<OrderSuccess />} />
+            <Route path="/orderSuccess" element={<OrderSuccess />} />
 
-             <Route path="/account" element={<Account />} />
+            <Route path="/account" element={<Account />} />
           </Route>
 
           <Route element={<OwnerLayout />}>
@@ -86,8 +85,10 @@ const App = () => {
 
           {/* delivery boy route */}
 
-          <Route element={<RequireRole allowedRoles={["deliveryBoy"]} />}>
-            <Route path="/delivery" element={<DeliveryBoy />} />
+          <Route element={<DeliveryLayout />}>
+            <Route element={<RequireRole allowedRoles={["deliveryBoy"]} />}>
+              <Route path="/delivery" element={<DeliveryBoy />} />
+            </Route>
           </Route>
         </Route>
 

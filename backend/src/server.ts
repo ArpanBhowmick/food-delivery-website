@@ -10,11 +10,25 @@ import shopRouter from "./routes/shop.route.js";
 import itemRouter from "./routes/item.route.js";
 import { configureCloudinary } from "./config/cloudinary.js";
 import orderRouter from "./routes/order.route.js";
+import { createServer } from "http";
+import { Server } from "socket.io";
+import { initializeSocket } from "./socket/socket.js";
+import { setIO } from "./socket/io.js";
 
 dotenv.config();
 configureCloudinary();
 
 const app = express();
+
+const httpServer = createServer(app);
+
+
+const io = new Server(httpServer, {
+  cors: corsOptions,
+});
+
+setIO(io);
+initializeSocket(io);
 
 const PORT = process.env.PORT || 5000;
 
@@ -24,27 +38,23 @@ app.use(express.json());
 // Read cookies sent by the browser and put them inside req.cookies.
 app.use(cookieParser());
 
-
 // auth routes
 app.use("/api/auth", authRouter);
 
 // user routes
-app.use("/api/user", userRouter)
+app.use("/api/user", userRouter);
 
 // shop routes
-app.use("/api/shop", shopRouter)
+app.use("/api/shop", shopRouter);
 
 // item routes
-app.use("/api/item", itemRouter)
+app.use("/api/item", itemRouter);
 
 // order routes
 app.use("/api/order", orderRouter);
 
-
-
 connectDB();
 
-
-app.listen(PORT, () => {
+httpServer.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });

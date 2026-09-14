@@ -5,6 +5,8 @@ import { Order } from "../models/order.model.js";
 import { Shop } from "../models/shop.modal.js";
 import { User } from "../models/user.model.js";
 import type { AuthRequest } from "../types/types.js";
+import { DeliveryAssignment } from "../models/deliveryAssignment.model.js";
+import { getIO } from "../socket/io.js";
 
 // Defines the expected shape of cart items.
 interface CartItemInput {
@@ -519,10 +521,7 @@ export const updateOrderStatus = async (req: AuthRequest, res: Response) => {
 
     // Find the requested shop order.
     const shopOrder = order.shopOrders.find(
-      (candidate) =>
-        (
-          candidate as typeof candidate & { _id: mongoose.Types.ObjectId }
-        )._id.toString() === shopOrderId,
+      (candidate) => candidate._id.toString() === shopOrderId,
     );
 
     if (!shopOrder) {
@@ -563,7 +562,6 @@ export const updateOrderStatus = async (req: AuthRequest, res: Response) => {
       });
     }
 
-   
     // Update the selected shop order's status.
     shopOrder.orderStatus = nextStatus;
 
@@ -590,6 +588,119 @@ export const updateOrderStatus = async (req: AuthRequest, res: Response) => {
 
     // Save both the shop order status and overall order status.
     await order.save();
+
+    if (nextStatus === "outForDelivery") {
+      // Get the shop
+      const shop = await Shop.findById(shopOrder.shop);
+
+      // Check if shop exists
+      if (!shop) {
+        return res.status(404).json({
+          success: false,
+          message: "Shop not found",
+        });
+      }
+
+      // Find delivery boys within 5 km of the shop
+      const nearbyDeliveryBoys = await User.find({
+        role: "deliveryBoy",
+        currentLocation: {
+          $near: {
+            $geometry: shop.location,
+            $maxDistance: 10000,
+          },
+        },
+      }).select("_id currentLocation");
+
+      console.log("SHOP LOCATION:", shop.location);
+      console.log("NEARBY DELIVERY BOYS:", nearbyDeliveryBoys);
+
+      // Get IDs of nearby delivery boys
+      const deliveryBoyIds = nearbyDeliveryBoys.map(
+        (deliveryBoy) => deliveryBoy._id,
+      );
+
+      // Find active orders of nearby delivery boys
+      const activeAssignments = await DeliveryAssignment.aggregate([
+        {
+          $match: {
+            assignedTo: { $in: deliveryBoyIds },
+            status: {
+              $in: ["accepted", "pickedUp"],
+            },
+          },
+        },
+        {
+          $group: {
+            _id: "$assignedTo",
+            activeOrderCount: {
+              $sum: 1,
+            },
+          },
+        },
+      ]);
+
+      // Identify delivery boys with 3 or more active orders
+      const deliveryBoysWithThreeOrders = new Set(
+        activeAssignments
+          .filter((assignment) => assignment.activeOrderCount >= 3)
+          .map((assignment) => assignment._id.toString()),
+      );
+
+      // Keep only eligible delivery boys
+      const eligibleDeliveryBoys = nearbyDeliveryBoys.filter(
+        (deliveryBoy) =>
+          !deliveryBoysWithThreeOrders.has(deliveryBoy._id.toString()),
+      );
+
+      // Create a delivery assignment and broadcast it
+      const deliveryAssignment = await DeliveryAssignment.create({
+        orderId: order._id,
+        shopId: shop._id,
+        shopOrderId: shopOrder._id,
+        assignedTo: null,
+        broadcastedTo: eligibleDeliveryBoys.map((deliveryBoy) => ({
+          deliveryBoy: deliveryBoy._id,
+          status: "notified",
+          notifiedAt: new Date(),
+        })),
+        status: "available",
+      });
+
+      const io = getIO();
+
+      for (const deliveryBoy of eligibleDeliveryBoys) {
+        console.log(
+          "ELIGIBLE DELIVERY BOYS:",
+          eligibleDeliveryBoys.map((deliveryBoy) => deliveryBoy._id.toString()),
+        );
+
+        io.to(deliveryBoy._id.toString()).emit("new_delivery_request", {
+  deliveryAssignmentId: deliveryAssignment._id,
+  orderId: order._id,
+  shopOrderId: shopOrder._id,
+
+  shop: {
+    name: shop.name,
+    address: shop.address,
+  },
+
+  deliveryAddress: order.deliveryAddress,
+
+  items: shopOrder.items,
+
+  itemTotal: shopOrder.itemTotal,
+});
+      }
+
+      // Return the updated shop order.
+      return res.status(200).json({
+        success: true,
+        message: "Shop order status updated successfully",
+        shopOrder,
+      });
+    }
+
     // Return the updated shop order.
     return res.status(200).json({
       success: true,

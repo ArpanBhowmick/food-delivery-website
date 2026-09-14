@@ -10,6 +10,7 @@ interface IShopOrderItem {
 }
 
 interface IShopOrder {
+  _id: mongoose.Types.ObjectId;
   shop: mongoose.Types.ObjectId;
   owner: mongoose.Types.ObjectId;
   items: IShopOrderItem[];
