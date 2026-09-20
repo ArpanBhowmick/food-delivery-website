@@ -14,6 +14,7 @@ import { createServer } from "http";
 import { Server } from "socket.io";
 import { initializeSocket } from "./socket/socket.js";
 import { setIO } from "./socket/io.js";
+import deliveryRouter from "./routes/delivery.route.js";
 
 dotenv.config();
 configureCloudinary();
@@ -52,6 +53,9 @@ app.use("/api/item", itemRouter);
 
 // order routes
 app.use("/api/order", orderRouter);
+
+// delivery boy routes
+app.use("/api/delivery", deliveryRouter);
 
 connectDB();
 

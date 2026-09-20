@@ -676,21 +676,22 @@ export const updateOrderStatus = async (req: AuthRequest, res: Response) => {
         );
 
         io.to(deliveryBoy._id.toString()).emit("new_delivery_request", {
-  deliveryAssignmentId: deliveryAssignment._id,
-  orderId: order._id,
-  shopOrderId: shopOrder._id,
+          deliveryAssignmentId: deliveryAssignment._id,
+          orderId: order._id,
+          shopOrderId: shopOrder._id,
 
-  shop: {
-    name: shop.name,
-    address: shop.address,
-  },
+          shop: {
+            name: shop.name,
+            address: shop.address,
+            location: shop.location,
+          },
 
-  deliveryAddress: order.deliveryAddress,
+          deliveryAddress: order.deliveryAddress,
 
-  items: shopOrder.items,
+          items: shopOrder.items,
 
-  itemTotal: shopOrder.itemTotal,
-});
+          itemTotal: shopOrder.itemTotal,
+        });
       }
 
       // Return the updated shop order.

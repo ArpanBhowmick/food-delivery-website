@@ -5,29 +5,23 @@ import { Button } from "../ui/button";
 import { Card, CardContent } from "../ui/card";
 import { Badge } from "../ui/badge";
 import { Progress } from "../ui/progress";
+import type { DeliveryRequest } from "@/types/delivery";
 
-const activeDeliveries = [
-  {
-    id: "ORD-7782",
-    restaurant: "Spice Symphony",
-    dropoff: "Sector 4, Salt Lake",
-    status: "Picked Up",
-    distance: "2.1 km",
-    estTime: "12 mins",
-  },
-  {
-    id: "ORD-7785",
-    restaurant: "Burger Station",
-    dropoff: "DLF IT Park",
-    status: "Heading to Restaurant",
-    distance: "0.8 km",
-    estTime: "5 mins",
-  },
-];
+interface ActiveDeliveriesProps {
+  deliveries: DeliveryRequest[];
+  onNavigate: (deliveryAssignmentId: string) => void;
+  isDeliverySelected: boolean;
+  onShowAllDeliveries: () => void;
+}
 
-const ActiveDeliveries = () => {
+const ActiveDeliveries = ({
+  deliveries,
+  onNavigate,
+  isDeliverySelected,
+  onShowAllDeliveries,
+}: ActiveDeliveriesProps) => {
   const MAX_CAPACITY = 3;
-  const currentLoad = activeDeliveries.length;
+  const currentLoad = deliveries.length;
   const capacityPercentage = (currentLoad / MAX_CAPACITY) * 100;
 
   return (
@@ -43,18 +37,32 @@ const ActiveDeliveries = () => {
               Manage your current active routes
             </p>
           </div>
-          <div className="text-left sm:text-right">
-            <span className="text-sm font-bold text-gray-700">
-              {currentLoad} / {MAX_CAPACITY} Slots Filled
-            </span>
-            <Progress
-              value={capacityPercentage}
-              className="h-2 w-full max-w-32 mt-2 bg-gray-200"
-            />
+          <div className="flex flex-wrap items-center gap-3 sm:justify-end">
+            {isDeliverySelected && (
+              <Button
+                type="button"
+                variant="outline"
+                onClick={onShowAllDeliveries}
+                className="cursor-pointer"
+              >
+                Show All on Map
+              </Button>
+            )}
+
+            <div className="text-left sm:text-right">
+              <span className="text-sm font-bold text-gray-700">
+                {currentLoad} / {MAX_CAPACITY} Slots Filled
+              </span>
+
+              <Progress
+                value={capacityPercentage}
+                className="h-2 w-full max-w-32 mt-2 bg-gray-200"
+              />
+            </div>
           </div>
         </div>
 
-        {activeDeliveries.length === 0 ? (
+        {deliveries.length === 0 ? (
           <Card className="border-dashed bg-gray-50/50">
             <CardContent className="flex flex-col items-center justify-center py-12 text-gray-500">
               <Package className="w-12 h-12 mb-4 text-gray-300" />
@@ -66,9 +74,9 @@ const ActiveDeliveries = () => {
           </Card>
         ) : (
           <div className="grid gap-4">
-            {activeDeliveries.map((delivery) => (
+            {deliveries.map((delivery) => (
               <Card
-                key={delivery.id}
+                key={delivery.deliveryAssignmentId}
                 className="overflow-hidden hover:shadow-md transition-shadow"
               >
                 <CardContent className="p-0">
@@ -78,22 +86,36 @@ const ActiveDeliveries = () => {
                         variant="secondary"
                         className="max-w-full whitespace-normal bg-blue-100 text-center text-blue-700 hover:bg-blue-100"
                       >
-                        {delivery.id}
+                        {delivery.orderId.slice(-6)}
                       </Badge>
-                      <span className="text-sm font-semibold text-gray-700 flex items-center gap-1">
-                        <Clock className="w-4 h-4 text-gray-400" />
-                        {delivery.estTime}
-                      </span>
                     </div>
-                    <Badge
-                      className={
-                        delivery.status === "Picked Up"
-                          ? "bg-indigo-500"
-                          : "bg-amber-500"
-                      }
-                    >
-                      {delivery.status}
-                    </Badge>
+
+                    <div className="flex flex-wrap items-center gap-2">
+                      {delivery.pickupCode && (
+                        <div className="rounded-md border border-slate-200 bg-white px-3 py-1.5 text-right">
+                          <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">
+                            Pickup Code
+                          </p>
+                          <p className="font-mono text-sm font-bold tracking-wider text-slate-900">
+                            {delivery.pickupCode}
+                          </p>
+                        </div>
+                      )}
+
+                      <Badge
+                        className={
+                          delivery.status === "pickedUp"
+                            ? "bg-indigo-500"
+                            : "bg-amber-500"
+                        }
+                      >
+                        {delivery.status === "accepted"
+                          ? "Accepted"
+                          : delivery.status === "pickedUp"
+                            ? "Picked Up"
+                            : "Delivered"}
+                      </Badge>
+                    </div>
                   </div>
 
                   <div className="p-4 flex flex-col md:flex-row justify-between gap-5 sm:p-5 sm:gap-6">
@@ -107,10 +129,11 @@ const ActiveDeliveries = () => {
                             Pickup
                           </p>
                           <p className="font-medium text-gray-900">
-                            {delivery.restaurant}
+                            {delivery.shop.name}
                           </p>
                         </div>
                       </div>
+
                       <div className="flex items-start gap-3">
                         <div className="mt-1 bg-gray-100 p-2 rounded-full">
                           <MapPin className="w-4 h-4 text-gray-600" />
@@ -120,20 +143,25 @@ const ActiveDeliveries = () => {
                             Dropoff
                           </p>
                           <p className="font-medium text-gray-900">
-                            {delivery.dropoff}
+                            {delivery.deliveryAddress.text}
                           </p>
                         </div>
                       </div>
                     </div>
 
                     <div className="flex w-full flex-col justify-end gap-3 md:w-auto md:min-w-[140px]">
-                      <Button className="w-full bg-slate-900 hover:bg-slate-800">
+                      <Button
+                        onClick={() =>
+                          onNavigate(delivery.deliveryAssignmentId)
+                        }
+                        className="w-full cursor-pointer bg-slate-900 hover:bg-slate-800"
+                      >
                         <Navigation className="w-4 h-4 mr-2" />
                         Navigate
                       </Button>
-                      <Button variant="outline" className="w-full">
+                      {/* <Button variant="outline" className="w-full cursor-pointer">
                         View Details
-                      </Button>
+                      </Button> */}
                     </div>
                   </div>
                 </CardContent>

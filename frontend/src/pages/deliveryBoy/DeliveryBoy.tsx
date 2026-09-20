@@ -1,7 +1,5 @@
-import { useState } from "react";
-import { MapPin, IndianRupee, Clock, CheckCircle } from "lucide-react";
-
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useCallback, useEffect, useState } from "react";
+import { IndianRupee, Clock, CheckCircle } from "lucide-react";
 
 import { Switch } from "@/components/ui/switch";
 
@@ -12,27 +10,46 @@ import IncomingDeliveryRequest from "@/components/deliveryBoy/IncomingDeliveryRe
 import useUpdateLocation from "@/hook/useUpdateLocation";
 import useSocket from "@/hook/useSocket";
 import type { DeliveryRequest } from "@/types/delivery";
+import useDeliveryApi from "@/hook/useDeliveryApi";
+import DeliveryTracking from "@/components/deliveryBoy/DeliveryTracking";
 
 // Mocking the existing location hook to ensure functionality remains intact
 
-
-
 export default function DeliveryBoyDashboard() {
+  const { getAvailableDeliveryAssignments, getMyActiveDeliveries } =
+    useDeliveryApi();
 
-const [isAvailable, setIsAvailable] = useState(true);
-const [deliveryRequests, setDeliveryRequests] = useState<DeliveryRequest[]>([]);  
-// Existing functionality preserved
+  const [isAvailable, setIsAvailable] = useState(true);
+  const [deliveryRequests, setDeliveryRequests] = useState<DeliveryRequest[]>(
+    [],
+  );
+  const [activeDeliveries, setActiveDeliveries] = useState<DeliveryRequest[]>(
+    [],
+  );
 
-  useUpdateLocation();
-  
- useSocket((request) => {
-  console.log("Delivery request received:", request);
+  const [selectedDeliveryAssignmentId, setSelectedDeliveryAssignmentId] =
+    useState<string | null>(null);
 
-   setDeliveryRequests((prev) => [...prev, request]);
-});
+  const [currentLocation, setCurrentLocation] = useState<{
+    latitude: number;
+    longitude: number;
+  } | null>(null);
+  // Existing functionality preserved
 
-  // Temporary local state (Replace with Redux state later)
-  
+  const handleLocationChange = useCallback(
+    (latitude: number, longitude: number) => {
+      setCurrentLocation({ latitude, longitude });
+    },
+    [],
+  );
+
+  useUpdateLocation(handleLocationChange);
+
+  useSocket((request) => {
+    console.log("Delivery request received:", request);
+
+    setDeliveryRequests((prev) => [...prev, request]);
+  });
 
   // Mock Data: To be replaced by backend queries
   const partnerInfo = {
@@ -41,6 +58,49 @@ const [deliveryRequests, setDeliveryRequests] = useState<DeliveryRequest[]>([]);
     deliveriesToday: 12,
     onlineHours: "4h 30m",
   };
+  console.log("CURRENT LOCATION:", currentLocation);
+
+  useEffect(() => {
+    const fetchDeliveryData = async () => {
+      try {
+        const [availableResponse, activeResponse] = await Promise.all([
+          getAvailableDeliveryAssignments(),
+          getMyActiveDeliveries(),
+        ]);
+
+        setDeliveryRequests(availableResponse.assignments);
+        setActiveDeliveries(activeResponse.assignments);
+      } catch (error) {
+        console.error("Failed to fetch delivery data:", error);
+      }
+    };
+
+    fetchDeliveryData();
+  }, []);
+
+  const handleDeliveryAccepted = (request: DeliveryRequest) => {
+    setDeliveryRequests((prev) =>
+      prev.filter(
+        (item) => item.deliveryAssignmentId !== request.deliveryAssignmentId,
+      ),
+    );
+
+    setActiveDeliveries((prev) => [
+      ...prev,
+      { ...request, status: "accepted" },
+    ]);
+  };
+
+  const handleNavigate = (deliveryAssignmentId: string) => {
+    console.log("Selected delivery:", deliveryAssignmentId);
+    setSelectedDeliveryAssignmentId(deliveryAssignmentId);
+  };
+
+  const handleShowAllDeliveries = () => {
+    setSelectedDeliveryAssignmentId(null);
+  };
+
+  console.log("DELIVERY REQUESTS STATE:", deliveryRequests);
 
   return (
     <div className="min-h-screen overflow-x-hidden bg-gray-50 pb-20 md:pb-8">
@@ -83,7 +143,7 @@ const [deliveryRequests, setDeliveryRequests] = useState<DeliveryRequest[]>([]);
               <Switch
                 checked={isAvailable}
                 onCheckedChange={setIsAvailable}
-                className="data-[state=checked]:bg-green-500"
+                className="cursor-pointer data-[state=checked]:bg-green-500"
               />
             </div>
           </div>
@@ -126,44 +186,33 @@ const [deliveryRequests, setDeliveryRequests] = useState<DeliveryRequest[]>([]);
         {/* Left Column: Active & Incoming */}
         <div className="min-w-0 lg:col-span-8 space-y-6 lg:space-y-8">
           {/* INCOMING REQUESTS SECTION */}
-          <IncomingDeliveryRequest isAvailable={isAvailable} requests={deliveryRequests}/>
+          <IncomingDeliveryRequest
+            isAvailable={isAvailable}
+            requests={deliveryRequests}
+            onAccepted={handleDeliveryAccepted}
+          />
+
+          {/* CURRENT LOCATION CARD */}
+
+          <DeliveryTracking
+            activeDeliveries={activeDeliveries}
+            currentLocation={currentLocation}
+            selectedDeliveryAssignmentId={selectedDeliveryAssignmentId}
+          />
 
           {/* ACTIVE DELIVERIES SECTION */}
 
-          <ActiveDeliveries />
+          <ActiveDeliveries
+            deliveries={activeDeliveries}
+            onNavigate={handleNavigate}
+            isDeliverySelected={selectedDeliveryAssignmentId !== null}
+            onShowAllDeliveries={handleShowAllDeliveries}
+          />
         </div>
 
         {/* Right Column: Location & Alerts */}
 
         <div className="min-w-0 lg:col-span-4 space-y-6">
-          {/* CURRENT LOCATION CARD */}
-
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-lg font-bold flex items-center gap-2">
-                <MapPin className="w-5 h-5 text-red-500" />
-                Current Zone
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="aspect-video bg-slate-100 rounded-lg flex items-center justify-center mb-4 border border-slate-200">
-                {/* Placeholder for Map Component */}
-                <p className="text-slate-400 text-sm font-medium flex flex-col items-center gap-2">
-                  <MapPin className="w-8 h-8 opacity-50" />
-                  Map Integration Pending
-                </p>
-              </div>
-              <div className="space-y-1">
-                <p className="text-sm font-semibold text-gray-900">
-                  Salt Lake, Sector V
-                </p>
-                <p className="text-xs text-green-600 font-medium">
-                  High Demand Area • +₹15 Surge
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-
           {/* pro tips */}
 
           <ProTips />

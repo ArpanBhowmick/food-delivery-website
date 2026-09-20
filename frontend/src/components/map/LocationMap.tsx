@@ -1,7 +1,7 @@
-import { useEffect, useRef } from "react";
-import L from "leaflet";
-import "leaflet/dist/leaflet.css";
+import { useCallback } from "react";
 import markerIcon from "leaflet/dist/images/marker-icon.png";
+import L from "leaflet";
+import Map from "./VisualMap";
 
 interface LocationMapProps {
   latitude: number;
@@ -12,89 +12,29 @@ interface LocationMapProps {
   ) => void;
 }
 
-const DEFAULT_ZOOM = 16;
-
 const LocationMap = ({
   latitude,
   longitude,
   onLocationChange,
 }: LocationMapProps) => {
-  const mapRef = useRef<HTMLDivElement | null>(null);
-  const mapInstanceRef = useRef<L.Map | null>(null);
-
-  /*
-   * Create map only once.
-   */
-  useEffect(() => {
-    if (!mapRef.current || mapInstanceRef.current) return;
-
-    const map = L.map(mapRef.current).setView(
-      [latitude, longitude],
-      DEFAULT_ZOOM,
-    );
-
-    L.tileLayer(
-      "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
-      {
-        attribution:
-          '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
-      },
-    ).addTo(map);
-
-    const handleDragEnd = () => {
+  const handleDragEnd = useCallback(
+    (map: L.Map) => {
       const center = map.getCenter();
 
-      onLocationChange(
-        center.lat,
-        center.lng,
-      );
-    };
-
-    map.on("dragend", handleDragEnd);
-
-    mapInstanceRef.current = map;
-
-    return () => {
-      map.off("dragend", handleDragEnd);
-      map.remove();
-      mapInstanceRef.current = null;
-    };
-  }, [onLocationChange]);
-
-  /*
-   * Update map position when location changes.
-   */
-  useEffect(() => {
-    const map = mapInstanceRef.current;
-
-    if (!map) return;
-
-    const currentCenter = map.getCenter();
-
-    if (
-      currentCenter.lat === latitude &&
-      currentCenter.lng === longitude
-    ) {
-      return;
-    }
-
-    map.setView(
-      [latitude, longitude],
-      map.getZoom(),
-      {
-        animate: true,
-      },
-    );
-  }, [latitude, longitude]);
+      onLocationChange(center.lat, center.lng);
+    },
+    [onLocationChange],
+  );
 
   return (
-    <div className="relative h-80 w-full overflow-hidden rounded-xl border border-slate-500">
-      <div
-        ref={mapRef}
-        className="h-full w-full"
+    <div className="relative">
+      <Map
+        latitude={latitude}
+        longitude={longitude}
+        zoom={16}
+        onDragEnd={handleDragEnd}
       />
 
-      {/* Fixed center marker */}
       <img
         src={markerIcon}
         alt=""

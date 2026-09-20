@@ -13,6 +13,10 @@ export interface IDeliveryAssignment {
 
   assignedTo: mongoose.Types.ObjectId | null;
 
+  pickupCode?: string | undefined;
+deliveryOtp?: string | undefined;
+deliveryOtpExpiresAt?: Date | undefined;
+
   broadcastedTo: IBroadcast[];
 
   status: "available" | "accepted" | "pickedUp" | "delivered";
@@ -66,6 +70,20 @@ const deliveryAssignmentSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
       default: null,
+    },
+
+    pickupCode: {
+      type: String,
+      unique: true,
+      sparse: true,
+    },
+
+    deliveryOtp: {
+      type: String,
+    },
+
+    deliveryOtpExpiresAt: {
+      type: Date,
     },
 
     broadcastedTo: {

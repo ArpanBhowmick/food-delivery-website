@@ -70,11 +70,6 @@ export const register = async (req: Request, res: Response) => {
   }
 };
 
-
-
-
-
-
 // login user
 
 export const login = async (req: Request, res: Response) => {
@@ -127,8 +122,7 @@ export const login = async (req: Request, res: Response) => {
         email: user.email,
         mobile: user.mobile,
         role: user.role,
-            defaultAddress: user.defaultAddress,
-
+        defaultAddress: user.defaultAddress,
       },
     });
   } catch (error) {
@@ -137,9 +131,6 @@ export const login = async (req: Request, res: Response) => {
     });
   }
 };
-
-
-
 
 // google authentication
 
@@ -171,8 +162,8 @@ export const refreshAccessToken = async (req: Request, res: Response) => {
     const newAccessToken = generateAccessToken(user);
 
     return res.status(200).json({
-       success: true,
-  message: "Access token refreshed successfully",
+      success: true,
+      message: "Access token refreshed successfully",
       accessToken: newAccessToken,
       user: {
         id: user._id,
@@ -180,11 +171,9 @@ export const refreshAccessToken = async (req: Request, res: Response) => {
         email: user.email,
         mobile: user.mobile,
         role: user.role,
-        defaultAddress:user.defaultAddress,
+        defaultAddress: user.defaultAddress,
       },
-      
     });
-
   } catch (error) {
     console.log(error);
     return res.status(403).json({
@@ -192,10 +181,6 @@ export const refreshAccessToken = async (req: Request, res: Response) => {
     });
   }
 };
-
-
-
-
 
 // logOut controller
 

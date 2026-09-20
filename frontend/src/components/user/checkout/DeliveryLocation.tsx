@@ -8,6 +8,7 @@ import useLocation from "@/hook/useLocation";
 import useReverseGeocode from "@/hook/useReverseGeocode";
 import LocationMap from "@/components/map/LocationMap";
 import useForwardGeocode from "@/hook/useForwardGeocode";
+import Map from "@/components/map/VisualMap";
 
 const DEFAULT_LATITUDE = 22.5726;
 const DEFAULT_LONGITUDE = 88.3639;
@@ -158,6 +159,8 @@ const DeliveryLocation = () => {
           longitude={longitude}
           onLocationChange={handleLocationChange}
         />
+
+        {/* <Map latitude={latitude} longitude={longitude} /> */}
       </div>
     </section>
   );

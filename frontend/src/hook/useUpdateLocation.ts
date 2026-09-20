@@ -1,7 +1,9 @@
 import { useEffect, useRef } from "react";
 import { useAxiosPrivate } from "./useAxiosPrivate";
 
-const useUpdateLocation = () => {
+const useUpdateLocation = (
+  onLocationChange?: (latitude: number, longitude: number) => void,
+) => {
   const axiosPrivate = useAxiosPrivate();
   const lastUpdateRef = useRef(0);
 
@@ -20,6 +22,8 @@ const useUpdateLocation = () => {
     const watchId = navigator.geolocation.watchPosition(
       async (position) => {
         const { latitude, longitude } = position.coords;
+
+        onLocationChange?.(latitude, longitude);
 
         console.log("Delivery boy location:", {
           latitude,
@@ -58,7 +62,7 @@ const useUpdateLocation = () => {
     return () => {
       navigator.geolocation.clearWatch(watchId);
     };
-  }, [axiosPrivate]);
+  }, [axiosPrivate, onLocationChange]);
 };
 
 export default useUpdateLocation;

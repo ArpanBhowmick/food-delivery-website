@@ -1,15 +1,19 @@
+import useDeliveryApi from "@/hook/useDeliveryApi";
 import useOrderApi from "@/hook/useOrderApi";
 import { Mail, MapPin, MoreHorizontal, Phone, Search } from "lucide-react";
 import { Fragment, useEffect, useState } from "react";
 
+// Define order status values.
 type OrderStatus = "placed" | "preparing" | "outForDelivery" | "cancelled";
 
+// Define customer details.
 interface OrderUser {
   name: string;
   email?: string;
   mobile?: string;
 }
 
+// Define item details.
 interface OrderItem {
   name: string;
   image?: string | { url?: string };
@@ -17,6 +21,7 @@ interface OrderItem {
   price: number;
 }
 
+// Define a shop's order section.
 interface ShopOrder {
   _id: string;
   shop: {
@@ -29,6 +34,7 @@ interface ShopOrder {
   orderStatus: OrderStatus;
 }
 
+// Define the complete order shape.
 interface Order {
   _id: string;
   user: OrderUser;
@@ -40,6 +46,7 @@ interface Order {
   shopOrders: ShopOrder[];
 }
 
+// List available order statuses.
 const statuses: OrderStatus[] = [
   "placed",
   "preparing",
@@ -47,6 +54,7 @@ const statuses: OrderStatus[] = [
   "cancelled",
 ];
 
+// Style each order status badge.
 const statusStyles: Record<OrderStatus, string> = {
   placed: "bg-orange-100 text-orange-800",
   preparing: "bg-slate-200 text-slate-700",
@@ -54,6 +62,7 @@ const statusStyles: Record<OrderStatus, string> = {
   cancelled: "bg-red-100 text-red-800",
 };
 
+// Style each order status label.
 const statusTextStyles: Record<OrderStatus, string> = {
   placed: "text-orange-800",
   preparing: "text-slate-700",
@@ -61,23 +70,40 @@ const statusTextStyles: Record<OrderStatus, string> = {
   cancelled: "text-red-800",
 };
 
+// Convert status values into readable text.
 const formatStatus = (status: string) =>
   status === "outForDelivery"
     ? "Out for Delivery"
     : status.charAt(0).toUpperCase() + status.slice(1);
 
+// Get an item's image URL.
 const getImageUrl = (image: OrderItem["image"]) =>
   typeof image === "string" ? image : image?.url;
 
 export default function OwnerOrders() {
+  // Initialize order APIs and local state.
   const { getOrders, updateOrderStatus } = useOrderApi();
+  const { verifyPickupCode, confirmPickup } = useDeliveryApi();
 
   const [orders, setOrders] = useState<Order[]>([]);
   const [orderStatuses, setOrderStatuses] = useState<
     Record<string, OrderStatus>
   >({});
+
   const [selectedShopId, setSelectedShopId] = useState("all");
 
+  const [pickupCode, setPickupCode] = useState("");
+
+  const [verifiedAssignment, setVerifiedAssignment] = useState<{
+    deliveryAssignmentId: string;
+    orderId: string;
+    shopOrderId: string;
+    shopId: string;
+    deliveryBoyId: string;
+    status: string;
+  } | null>(null);
+
+  // Load the owner's orders on page load.
   useEffect(() => {
     const fetchOrders = async () => {
       try {
@@ -92,6 +118,7 @@ export default function OwnerOrders() {
     fetchOrders();
   }, []);
 
+  // Build a unique list of the owner's shops.
   const shops = Array.from(
     new Map(
       orders.flatMap((order) =>
@@ -103,20 +130,46 @@ export default function OwnerOrders() {
     ).values(),
   );
 
+  // Update a shop order's status.
   const handleStatusChange = async (
     orderId: string,
     shopOrderId: string,
-    status: OrderStatus
+    status: OrderStatus,
   ) => {
     const response = await updateOrderStatus(orderId, shopOrderId, status);
-console.log("Status update response:", response);
-     setOrderStatuses((prev) => ({
+    console.log("Status update response:", response);
+    setOrderStatuses((prev) => ({
       ...prev,
       [shopOrderId]: status,
     }));
-
   };
 
+  const handleVerifyPickupCode = async () => {
+    if (!pickupCode.trim()) return;
+
+    try {
+      const response = await verifyPickupCode(pickupCode.trim());
+
+      setVerifiedAssignment(response.assignment);
+    } catch (error) {
+      console.error("Failed to verify pickup code:", error);
+      setVerifiedAssignment(null);
+    }
+  };
+
+  const handleConfirmPickup = async () => {
+    if (!verifiedAssignment) return;
+
+    try {
+      await confirmPickup(verifiedAssignment.deliveryAssignmentId);
+
+      setVerifiedAssignment(null);
+    } catch (error) {
+      console.error("Failed to confirm pickup:", error);
+    }
+  };
+
+  // Render the orders page.
   return (
     <div className="min-h-full w-full bg-[#fafafa] p-4 font-sans text-slate-900 sm:p-6 lg:p-8">
       <div className="w-full space-y-6">
@@ -133,7 +186,7 @@ console.log("Status update response:", response);
           </p>
         </div>
 
-        {/* filter  */}
+        {/* Filter orders by shop or status. */}
         <div className="bg-white border border-gray-200 rounded-lg p-3 flex flex-wrap gap-4 items-center justify-between mb-6 shadow-sm">
           <div className="flex flex-wrap items-center gap-3 sm:gap-4">
             <span className="font-semibold px-2">Orders</span>
@@ -149,6 +202,29 @@ console.log("Status update response:", response);
                 placeholder="Search orders"
                 className="pl-9 pr-4 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 w-full"
               />
+            </div>
+
+            <div className="flex w-full sm:w-auto items-center gap-2">
+              <input
+                type="text"
+                value={pickupCode}
+                onChange={(event) => setPickupCode(event.target.value)}
+                onKeyDown={(event) => {
+                  if (event.key === "Enter") {
+                    handleVerifyPickupCode();
+                  }
+                }}
+                placeholder="Pickup code"
+                className="w-full sm:w-36 border border-gray-300 rounded-md px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+
+              <button
+                type="button"
+                onClick={handleVerifyPickupCode}
+                className="rounded-md bg-[#581c87] px-4 py-2 text-sm font-medium text-white hover:bg-[#4c1a78]"
+              >
+                Find
+              </button>
             </div>
           </div>
 
@@ -177,6 +253,7 @@ console.log("Status update response:", response);
           </div>
         </div>
 
+        {/* Render each matching shop order. */}
         <div className="space-y-5">
           {orders.flatMap((order) => {
             const shopOrders =
@@ -186,9 +263,18 @@ console.log("Status update response:", response);
                     (shopOrder) => shopOrder.shop._id === selectedShopId,
                   );
 
-            return shopOrders.map((shopOrder) => {
+            const visibleShopOrders = verifiedAssignment
+              ? shopOrders.filter(
+                  (shopOrder) =>
+                    order._id === verifiedAssignment.orderId &&
+                    shopOrder._id === verifiedAssignment.shopOrderId,
+                )
+              : shopOrders;
+
+            return visibleShopOrders.map((shopOrder) => {
               const items = shopOrder.items;
 
+              // Use the locally updated status when available.
               const status =
                 orderStatuses[shopOrder._id] ?? shopOrder.orderStatus;
 
@@ -197,6 +283,7 @@ console.log("Status update response:", response);
                   key={`${order._id}-${shopOrder._id}`}
                   className="w-full rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-6"
                 >
+                  {/* Show order number and creation time. */}
                   <header className="flex items-center justify-between gap-4 border-b border-slate-100 pb-4">
                     <h2 className="truncate text-base font-bold text-slate-900 sm:text-lg">
                       Order #{order._id.slice(-6)}
@@ -211,6 +298,7 @@ console.log("Status update response:", response);
                     </time>
                   </header>
 
+                  {/* Show customer contact details. */}
                   <section className="border-b border-slate-100 py-4">
                     <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
                       Customer
@@ -230,6 +318,7 @@ console.log("Status update response:", response);
                     </div>
                   </section>
 
+                  {/* Show the delivery address. */}
                   <section className="border-b border-slate-100 py-4">
                     <div className="flex items-center gap-2 text-sm font-semibold text-slate-700">
                       <MapPin className="h-4 w-4 text-[#581c87]" />
@@ -241,6 +330,7 @@ console.log("Status update response:", response);
                     </p>
                   </section>
 
+                  {/* Show the first three order items. */}
                   <section className="mt-4 rounded-xl border border-slate-200 p-3 sm:p-4">
                     <div className="space-y-3">
                       {items.slice(0, 3).map((item, index) => {
@@ -285,6 +375,7 @@ console.log("Status update response:", response);
                     )}
                   </section>
 
+                  {/* Show payment method and shop order total. */}
                   <div className="flex items-center justify-between gap-4 border-b border-slate-100 py-4 text-sm">
                     <span className="text-slate-600">
                       Payment:{" "}
@@ -297,6 +388,7 @@ console.log("Status update response:", response);
                     </span>
                   </div>
 
+                  {/* Show and update the order status. */}
                   <footer className="flex items-center justify-between gap-3 pt-4">
                     <span className="text-sm font-semibold text-slate-700">
                       Status:{" "}
@@ -306,28 +398,43 @@ console.log("Status update response:", response);
                         {formatStatus(status)}
                       </span>
                     </span>
-                    <select
-                      value={status}
-                      onChange={(event) =>
-                        handleStatusChange(
-                          order._id,
-                          shopOrder._id,
-                          event.target.value as OrderStatus,
-                        )
-                      }
-                      className={`cursor-pointer rounded-md border border-transparent px-3 py-1.5 text-sm font-medium outline-none focus:border-[#581c87] focus:ring-2 focus:ring-[#581c87]/20 ${statusStyles[status]}`}
-                      aria-label={`Change status for order ${order._id}`}
-                    >
-                      {statuses.map((option) => (
-                        <option
-                          className="cursor-pointer"
-                          key={option}
-                          value={option}
-                        >
-                          {formatStatus(option)}
-                        </option>
-                      ))}
-                    </select>
+
+                    <div className="flex items-center gap-2">
+                      {verifiedAssignment &&
+                        order._id === verifiedAssignment.orderId &&
+                        shopOrder._id === verifiedAssignment.shopOrderId && (
+                          <button
+                            type="button"
+                            onClick={handleConfirmPickup}
+                            className="rounded-md bg-[#581c87] px-4 py-2 text-sm font-medium text-white hover:bg-[#4c1a78]"
+                          >
+                            Pick Up
+                          </button>
+                        )}
+
+                      <select
+                        value={status}
+                        onChange={(event) =>
+                          handleStatusChange(
+                            order._id,
+                            shopOrder._id,
+                            event.target.value as OrderStatus,
+                          )
+                        }
+                        className={`cursor-pointer rounded-md border border-transparent px-3 py-1.5 text-sm font-medium outline-none focus:border-[#581c87] focus:ring-2 focus:ring-[#581c87]/20 ${statusStyles[status]}`}
+                        aria-label={`Change status for order ${order._id}`}
+                      >
+                        {statuses.map((option) => (
+                          <option
+                            className="cursor-pointer"
+                            key={option}
+                            value={option}
+                          >
+                            {formatStatus(option)}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
                   </footer>
                 </article>
               );

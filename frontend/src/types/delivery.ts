@@ -2,11 +2,16 @@ export interface DeliveryRequest {
   deliveryAssignmentId: string;
   orderId: string;
   shopOrderId: string;
+  pickupCode?: string;
 
-  shop: {
-    name: string;
-    address: string;
+ shop: {
+  name: string;
+  address: string;
+  location: {
+    type: "Point";
+    coordinates: [number, number];
   };
+};
 
   deliveryAddress: {
     text: string;
@@ -24,4 +29,6 @@ export interface DeliveryRequest {
   }[];
 
   itemTotal: number;
+
+  status?: "available" | "accepted" | "pickedUp" | "delivered";
 }
