@@ -35,6 +35,8 @@ type OwnerOrderStatus = "placed" | "preparing" | "outForDelivery";
 const isObject = (value: unknown): value is Record<string, unknown> =>
   typeof value === "object" && value !== null;
 
+
+
 export const createOrder = async (req: AuthRequest, res: Response) => {
   try {
     // Read order details from the request body.
@@ -408,7 +410,7 @@ export const getOrders = async (req: AuthRequest, res: Response) => {
 
     // Select only the order fields needed by the clients.
     const orderFields =
-      "user shopOrders paymentMethod paymentStatus deliveryAddress pricing orderStatus createdAt";
+      "user shopOrders paymentMethod paymentStatus deliveryAddress pricing orderStatus createdAt deliveredAt";
 
     if (user.role === "owner") {
       // Find orders containing at least one shop owned by this owner.

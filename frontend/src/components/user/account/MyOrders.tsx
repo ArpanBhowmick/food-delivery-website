@@ -4,10 +4,12 @@ import { Separator } from "@/components/ui/separator";
 import useOrderApi from "@/hook/useOrderApi";
 import { CheckCircle2, ChevronRight, RotateCcw, XCircle } from "lucide-react";
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 interface Order {
   _id: string;
   createdAt: string;
+  deliveredAt?: string;
   orderStatus: string;
   paymentMethod: string;
   paymentStatus: string;
@@ -50,71 +52,8 @@ interface Order {
   }[];
 }
 
-// const orderHistory = [
-//   {
-//     id: "1",
-//     time: "10:30 AM",
-//     date: "Aug 24, 2023",
-//     status: "Delivered",
-//     total: "42.50",
-//     paymentMethod: "Cash on Delivery",
-//     items: [
-//       { id: "i1", icon: "🥑", bg: "bg-[#b8d090]" },
-//       { id: "i2", icon: "🍞", bg: "bg-[#d8c0a0]" },
-//     ],
-//   },
-//   {
-//     id: "2",
-//     time: "2:15 PM",
-//     date: "Aug 29, 2023",
-//     status: "Cancelled",
-//     total: "42.50",
-//     paymentMethod: "Cash on Delivery",
-//     items: [
-//       { id: "i1", icon: "🥑", bg: "bg-[#b8d090]" },
-//       { id: "i2", icon: "🍞", bg: "bg-[#d8c0a0]" },
-//       { id: "i3", icon: "🥛", bg: "bg-[#c8e0f0]" },
-//     ],
-//   },
-//   {
-//     id: "3",
-//     time: "6:45 PM",
-//     date: "Jun 20, 2023",
-//     status: "Delivered",
-//     total: "42.50",
-//     paymentMethod: "Cash on Delivery",
-//     items: [
-//       { id: "i1", icon: "🥑", bg: "bg-[#b8d090]" },
-//       { id: "i2", icon: "🍞", bg: "bg-[#d8c0a0]" },
-//     ],
-//   },
-//   {
-//     id: "4",
-//     time: "11:20 AM",
-//     date: "May 12, 2023",
-//     status: "Delivered",
-//     total: "38.75",
-//     paymentMethod: "Cash on Delivery",
-//     items: [
-//       { id: "i1", icon: "🥑", bg: "bg-[#b8d090]" },
-//       { id: "i2", icon: "🍞", bg: "bg-[#d8c0a0]" },
-//     ],
-//   },
-//   {
-//     id: "5",
-//     time: "4:05 PM",
-//     date: "Apr 28, 2023",
-//     status: "Cancelled",
-//     total: "27.90",
-//     paymentMethod: "Cash on Delivery",
-//     items: [
-//       { id: "i1", icon: "🥛", bg: "bg-[#c8e0f0]" },
-//       { id: "i2", icon: "🍞", bg: "bg-[#d8c0a0]" },
-//     ],
-//   },
-// ];
-
 const MyOrders = () => {
+  const navigate = useNavigate();
   const { getOrders } = useOrderApi();
 
   const [orders, setOrders] = useState<Order[]>([]);
@@ -151,10 +90,11 @@ const MyOrders = () => {
                   <div className="p-5 sm:p-4 flex items-start justify-between bg-white">
                     <div>
                       <h3 className="flex items-center gap-1.5 font-semibold text-slate-900 text-sm">
-                        Order: {" "}
+                        Order:{" "}
                         {order.orderStatus.charAt(0).toUpperCase() +
                           order.orderStatus.slice(1)}
-                        {order.orderStatus === "delivered" ? (
+                        {order.orderStatus === "outForDelivery" ||
+                        order.orderStatus === "delivered" ? (
                           <CheckCircle2 className="w-3.5 h-3.5 text-green-500" />
                         ) : (
                           <XCircle className="w-3.5 h-3.5 text-slate-400" />
@@ -166,6 +106,15 @@ const MyOrders = () => {
                         {new Date(order.createdAt).toLocaleDateString()},{" "}
                         {new Date(order.createdAt).toLocaleTimeString()}
                       </p>
+
+                      {order.orderStatus === "delivered" &&
+                        order.deliveredAt && (
+                          <p className="text-sm text-slate-500 mt-1">
+                            Delivered at{" "}
+                            {new Date(order.deliveredAt).toLocaleDateString()},{" "}
+                            {new Date(order.deliveredAt).toLocaleTimeString()}
+                          </p>
+                        )}
                     </div>
                     <div className="flex flex-col items-end gap-1">
                       <div className="flex items-center gap-1 text-sm font-bold text-slate-900">
@@ -220,10 +169,26 @@ const MyOrders = () => {
                         >
                           View Details
                         </Button> */}
-                        <Button className="flex-1 cursor-pointer md:flex-none bg-[#3f4a5c] hover:bg-[#323b49] text-white gap-2 font-medium rounded-lg h-10 px-5">
-                          Order Again
-                          <RotateCcw className="w-4 h-4" />
-                        </Button>
+                        {order.orderStatus === "outForDelivery" ? (
+                          <Button
+                            type="button"
+                            onClick={() =>
+                              navigate(`/orders/${order._id}/trackOrder`)
+                            }
+                            className="flex-1 cursor-pointer md:flex-none bg-[#c44545] hover:bg-[#ad3838] text-white gap-2 font-medium rounded-lg h-10 px-5"
+                          >
+                            Track Order
+                            <ChevronRight className="w-4 h-4" />
+                          </Button>
+                        ) : order.orderStatus === "delivered" ? (
+                          <Button
+                            type="button"
+                            className="flex-1 cursor-pointer md:flex-none bg-[#3f4a5c] hover:bg-[#323b49] text-white gap-2 font-medium rounded-lg h-10 px-5"
+                          >
+                            Order Again
+                            <RotateCcw className="w-4 h-4" />
+                          </Button>
+                        ) : null}
                       </div>
                     </div>
                   </div>

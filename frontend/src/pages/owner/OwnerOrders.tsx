@@ -2,6 +2,12 @@ import useDeliveryApi from "@/hook/useDeliveryApi";
 import useOrderApi from "@/hook/useOrderApi";
 import { Mail, MapPin, MoreHorizontal, Phone, Search } from "lucide-react";
 import { Fragment, useEffect, useState } from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 // Define order status values.
 type OrderStatus = "placed" | "preparing" | "outForDelivery" | "cancelled";
@@ -83,7 +89,9 @@ const getImageUrl = (image: OrderItem["image"]) =>
 export default function OwnerOrders() {
   // Initialize order APIs and local state.
   const { getOrders, updateOrderStatus } = useOrderApi();
-  const { verifyPickupCode, confirmPickup } = useDeliveryApi();
+
+  const { verifyPickupCode, confirmPickup, getDeliveryAssignmentDetails } =
+    useDeliveryApi();
 
   const [orders, setOrders] = useState<Order[]>([]);
   const [orderStatuses, setOrderStatuses] = useState<
@@ -91,6 +99,15 @@ export default function OwnerOrders() {
   >({});
 
   const [selectedShopId, setSelectedShopId] = useState("all");
+
+  const [deliveryDetailsOpen, setDeliveryDetailsOpen] = useState(false);
+  const [selectedDeliveryOrder, setSelectedDeliveryOrder] = useState<{
+    orderId: string;
+    shopOrderId: string;
+  } | null>(null);
+
+  const [deliveryDetails, setDeliveryDetails] = useState<any>(null);
+  const [deliveryDetailsLoading, setDeliveryDetailsLoading] = useState(false);
 
   const [pickupCode, setPickupCode] = useState("");
 
@@ -166,6 +183,30 @@ export default function OwnerOrders() {
       setVerifiedAssignment(null);
     } catch (error) {
       console.error("Failed to confirm pickup:", error);
+    }
+  };
+
+  const handleOpenDeliveryDetails = async (
+    orderId: string,
+    shopOrderId: string,
+  ) => {
+    setSelectedDeliveryOrder({
+      orderId,
+      shopOrderId,
+    });
+
+    setDeliveryDetailsOpen(true);
+    setDeliveryDetailsLoading(true);
+    setDeliveryDetails(null);
+
+    try {
+      const response = await getDeliveryAssignmentDetails(orderId, shopOrderId);
+
+      setDeliveryDetails(response.assignment);
+    } catch (error) {
+      console.error("Failed to fetch delivery details:", error);
+    } finally {
+      setDeliveryDetailsLoading(false);
     }
   };
 
@@ -400,6 +441,17 @@ export default function OwnerOrders() {
                     </span>
 
                     <div className="flex items-center gap-2">
+                      {status === "outForDelivery" && (
+                        <button
+                          type="button"
+                          onClick={() =>
+                            handleOpenDeliveryDetails(order._id, shopOrder._id)
+                          }
+                          className="rounded-md border border-[#581c87] px-4 py-2 text-sm font-medium text-[#581c87] hover:bg-[#581c87]/5 cursor-pointer"
+                        >
+                          Delivery Details
+                        </button>
+                      )}
                       {verifiedAssignment &&
                         order._id === verifiedAssignment.orderId &&
                         shopOrder._id === verifiedAssignment.shopOrderId && (
@@ -441,6 +493,122 @@ export default function OwnerOrders() {
             });
           })}
         </div>
+
+        <Dialog
+          open={deliveryDetailsOpen}
+          onOpenChange={setDeliveryDetailsOpen}
+        >
+          <DialogContent className="flex max-h-[80vh] flex-col sm:max-w-lg">
+            <DialogHeader>
+              <DialogTitle>Delivery Details</DialogTitle>
+            </DialogHeader>
+
+            {deliveryDetailsLoading ? (
+              <div className="py-8 text-center text-sm text-slate-500">
+                Loading delivery details...
+              </div>
+            ) : !deliveryDetails ? (
+              <div className="py-8 text-center text-sm text-slate-500">
+                No delivery details found.
+              </div>
+            ) : (
+              <div className="space-y-6">
+                <div>
+                  <p className="text-sm font-semibold text-slate-500">Order</p>
+
+                  <p className="mt-1 text-base font-semibold text-slate-900">
+                    #{selectedDeliveryOrder?.orderId.slice(-6)}
+                  </p>
+
+                  <p className="mt-1 text-sm text-slate-600">
+                    Status:{" "}
+                    <span className="font-semibold text-green-700">
+                      {deliveryDetails.status === "outForDelivery"
+                        ? "Out for Delivery"
+                        : deliveryDetails.status}
+                    </span>
+                  </p>
+                </div>
+
+                <div className="border-t border-slate-200 pt-4">
+                  <p className="text-sm font-semibold text-slate-500">
+                    Accepted By
+                  </p>
+
+                  {deliveryDetails.acceptedBy ? (
+                    <div className="mt-2 space-y-1">
+                      <p className="font-semibold text-slate-900">
+                        {deliveryDetails.acceptedBy.name}
+                      </p>
+
+                      <p className="text-sm text-slate-600">
+                        {deliveryDetails.acceptedBy.mobile ??
+                          "No phone provided"}
+                      </p>
+
+                      <p className="text-sm text-slate-600">
+                        {deliveryDetails.acceptedBy.email ??
+                          "No email provided"}
+                      </p>
+                    </div>
+                  ) : (
+                    <p className="mt-2 text-sm text-slate-500">
+                      No delivery boy has accepted this assignment yet.
+                    </p>
+                  )}
+                </div>
+
+                <div className="min-h-0 border-t border-slate-200 pt-4">
+                  <p className="text-sm font-semibold text-slate-500">
+                    Available Delivery Boys
+                  </p>
+
+                  {!deliveryDetails.broadcastedTo?.length ? (
+                    <p className="mt-3 text-sm text-slate-500">
+                      No delivery boys are currently available in this area.
+                    </p>
+                  ) : (
+                    <div className="mt-3 max-h-60 space-y-3 overflow-y-auto pr-2">
+                      {(() => {
+  const availableDeliveryBoys =
+    deliveryDetails.broadcastedTo?.filter(
+      (entry: any) => entry.status === "notified",
+    ) ?? [];
+
+  return availableDeliveryBoys.length === 0 ? (
+    <p className="mt-3 text-sm text-slate-500">
+      No delivery boys are currently available in this area.
+    </p>
+  ) : (
+    <div className="mt-3 max-h-60 space-y-3 overflow-y-auto pr-2">
+      {availableDeliveryBoys.map((entry: any) => (
+        <div
+          key={entry.deliveryBoy?._id}
+          className="rounded-lg border border-slate-200 p-3"
+        >
+          <p className="font-semibold text-slate-900">
+            {entry.deliveryBoy?.name ?? "Unknown"}
+          </p>
+
+          <p className="text-sm text-slate-600">
+            {entry.deliveryBoy?.mobile ?? "No phone provided"}
+          </p>
+
+          <p className="mt-1 text-xs font-medium uppercase tracking-wide text-slate-500">
+            {entry.status}
+          </p>
+        </div>
+      ))}
+    </div>
+  );
+})()}
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   );

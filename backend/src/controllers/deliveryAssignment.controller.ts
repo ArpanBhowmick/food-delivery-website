@@ -800,7 +800,8 @@ export const verifyDeliveryOtp = async (req: AuthRequest, res: Response) => {
         (candidate) => candidate.orderStatus === "delivered",
       )
     ) {
-      order.orderStatus = "delivered";
+       order.orderStatus = "delivered";
+  order.deliveredAt = new Date();
     }
 
     await Promise.all([assignment.save(), order.save()]);
@@ -823,6 +824,265 @@ export const verifyDeliveryOtp = async (req: AuthRequest, res: Response) => {
     return res.status(500).json({
       success: false,
       message: "Failed to verify delivery OTP",
+    });
+  }
+};
+
+
+// get delivery assignments details
+
+export const getDeliveryAssignmentDetails = async (
+  req: AuthRequest,
+  res: Response,
+) => {
+  try {
+    // Read the authenticated owner and selected order identifiers.
+    const ownerId = req.userId;
+    const { orderId, shopOrderId } = req.params;
+
+    // Require authentication.
+    if (!ownerId) {
+      return res.status(401).json({
+        success: false,
+        message: "User is not authenticated",
+      });
+    }
+
+    // Confirm the authenticated user exists.
+    const owner = await User.findById(ownerId).select("role");
+
+    if (!owner) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    // Allow only restaurant owners to view delivery details.
+    if (owner.role !== "owner") {
+      return res.status(403).json({
+        success: false,
+        message: "You are not authorized to access delivery details",
+      });
+    }
+
+    // Validate the selected order identifiers.
+    if (
+      typeof orderId !== "string" ||
+      !mongoose.Types.ObjectId.isValid(orderId) ||
+      typeof shopOrderId !== "string" ||
+      !mongoose.Types.ObjectId.isValid(shopOrderId)
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: "Valid order and shop order ids are required",
+      });
+    }
+
+    // Load the assignment and its related owner, shop, and delivery-boy data.
+    const assignment = await DeliveryAssignment.findOne({
+      orderId,
+      shopOrderId,
+    })
+      .populate("orderId", "user deliveryAddress pricing shopOrders")
+      .populate("shopId", "name address location owner")
+      .populate("assignedTo", "name email mobile role")
+      .populate("broadcastedTo.deliveryBoy", "name email mobile role")
+      .lean();
+
+    if (!assignment) {
+      return res.status(404).json({
+        success: false,
+        message: "Delivery assignment not found",
+      });
+    }
+
+    const order = assignment.orderId as any;
+    const shop = assignment.shopId as any;
+
+    // Confirm the populated references still exist.
+    if (!order) {
+      return res.status(404).json({
+        success: false,
+        message: "Order not found",
+      });
+    }
+
+    if (!shop || !shop.owner) {
+      return res.status(404).json({
+        success: false,
+        message: "Shop not found",
+      });
+    }
+
+    // Verify that the authenticated owner manages this shop.
+    if (shop.owner.toString() !== ownerId) {
+      return res.status(403).json({
+        success: false,
+        message: "You are not authorized to access this delivery",
+      });
+    }
+
+    // Confirm that the assignment points to the selected shop order.
+    const shopOrder = order.shopOrders?.find(
+      (candidate: any) =>
+        candidate._id.toString() === assignment.shopOrderId.toString() &&
+        candidate.shop.toString() === shop._id.toString(),
+    );
+
+    if (!shopOrder) {
+      return res.status(404).json({
+        success: false,
+        message: "Shop order not found",
+      });
+    }
+
+    // Return owner-facing assignment details without exposing OTP secrets.
+    const broadcastedTo = (assignment.broadcastedTo as any[]).map(
+      (broadcast) => ({
+        deliveryBoy: broadcast.deliveryBoy,
+        status: broadcast.status,
+        notifiedAt: broadcast.notifiedAt,
+      }),
+    );
+
+    return res.status(200).json({
+      success: true,
+      assignment: {
+        deliveryAssignmentId: assignment._id.toString(),
+        orderId: order._id.toString(),
+        shopOrderId: assignment.shopOrderId.toString(),
+        shopId: shop._id.toString(),
+        shop,
+        shopOrder,
+        status: assignment.status,
+        assignedTo: assignment.assignedTo,
+        acceptedBy: assignment.assignedTo,
+        broadcastedTo,
+        acceptedAt: assignment.acceptedAt,
+        pickedUpAt: assignment.pickedUpAt,
+        deliveredAt: assignment.deliveredAt,
+      },
+    });
+  } catch (error) {
+    // Handle unexpected database or population errors.
+    console.error("getDeliveryAssignmentDetails:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Failed to fetch delivery assignment details",
+    });
+  }
+};
+
+
+// Get delivery tracking details for the customer.
+export const getUserDeliveryTracking = async (
+  req: AuthRequest,
+  res: Response,
+) => {
+  try {
+    const userId = req.userId;
+    const { orderId } = req.params;
+
+    
+
+    if (!userId) {
+      return res.status(401).json({
+        success: false,
+        message: "User is not authenticated",
+      });
+    }
+
+    const user = await User.findById(userId).select("role");
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    if (user.role !== "user") {
+      return res.status(403).json({
+        success: false,
+        message: "You are not authorized to access delivery tracking",
+      });
+    }
+
+    if (
+      typeof orderId !== "string" ||
+      !mongoose.Types.ObjectId.isValid(orderId)
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: "Valid order id is required",
+      });
+    }
+
+    // Verify that this order belongs to the authenticated customer.
+    const order = await Order.findOne({
+      _id: orderId,
+      user: userId,
+    })
+      .select("_id")
+      .lean();
+
+    if (!order) {
+      return res.status(404).json({
+        success: false,
+        message: "Order not found",
+      });
+    }
+
+    // Get all delivery assignments belonging to this order.
+    const assignments = await DeliveryAssignment.find({
+      orderId,
+    })
+      .populate("assignedTo", "name email mobile role currentLocation")
+      .lean();
+
+    if (assignments.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "No delivery assignments found for this order",
+      });
+    }
+
+    const tracking = assignments.map((assignment) => {
+      const deliveryBoy = assignment.assignedTo as any;
+
+      return {
+        deliveryAssignmentId: assignment._id.toString(),
+        orderId: assignment.orderId.toString(),
+        shopOrderId: assignment.shopOrderId.toString(),
+        status: assignment.status,
+
+        deliveryBoy: deliveryBoy
+          ? {
+              id: deliveryBoy._id.toString(),
+              name: deliveryBoy.name,
+              mobile: deliveryBoy.mobile,
+              currentLocation: deliveryBoy.currentLocation ?? null,
+            }
+          : null,
+
+        acceptedAt: assignment.acceptedAt,
+        pickedUpAt: assignment.pickedUpAt,
+        deliveredAt: assignment.deliveredAt,
+      };
+    });
+
+    return res.status(200).json({
+      success: true,
+      tracking,
+    });
+  } catch (error) {
+    console.error("getUserDeliveryTracking:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Failed to fetch delivery tracking details",
     });
   }
 };

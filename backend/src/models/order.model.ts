@@ -26,6 +26,8 @@ interface IShopOrder {
 export interface IOrder {
   user: mongoose.Types.ObjectId;
 
+    deliveredAt?: Date;
+
   shopOrders: IShopOrder[];
 
   paymentMethod: "cod" | "upi" | "card";
@@ -142,6 +144,10 @@ const orderSchema = new mongoose.Schema(
       ref: "User",
       required: true,
     },
+
+    deliveredAt: {
+  type: Date,
+},
 
     shopOrders: {
       type: [shopOrderSchema],

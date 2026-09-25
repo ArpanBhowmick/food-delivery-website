@@ -3,7 +3,9 @@ import {
   acceptDeliveryAssignment,
   confirmPickup,
   getAvailableDeliveryAssignments,
+  getDeliveryAssignmentDetails,
   getMyActiveDeliveries,
+  getUserDeliveryTracking,
   requestDeliveryOtp,
   verifyDeliveryOtp,
   verifyPickupCode,
@@ -61,6 +63,21 @@ deliveryRouter.patch(
   "/:deliveryAssignmentId/verifyDeliveryOtp",
   verifyJWT,
   verifyDeliveryOtp,
+);
+
+
+// get delivery assignments details
+deliveryRouter.get(
+  "/:orderId/:shopOrderId/deliveryDetails",
+  verifyJWT,
+  getDeliveryAssignmentDetails,
+);
+
+// get customer delivery tracking details
+deliveryRouter.get(
+  "/user/:orderId/tracking",
+  verifyJWT,
+  getUserDeliveryTracking,
 );
 
 

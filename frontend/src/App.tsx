@@ -19,10 +19,11 @@ import ShopDetails from "./components/owner/ShopDetails";
 import AddItem from "./pages/owner/AddItem";
 import EditItem from "./pages/owner/EditItem";
 import OrderSuccess from "./components/user/checkout/OrderSuccess";
-import MyOrders from "./components/user/account/MyOrders";
+// import MyOrders from "./components/user/account/MyOrders";
 import Account from "./pages/user/Account";
 import OwnerOrders from "./pages/owner/OwnerOrders";
 import DeliveryLayout from "./pages/deliveryBoy/DeliveryLayout";
+import TrackOrder from "./pages/user/TrackOrder";
 // import OwnerOrders from "./pages/owner/OwnerOrders";
 
 const App = () => {
@@ -55,6 +56,11 @@ const App = () => {
             <Route path="/orderSuccess" element={<OrderSuccess />} />
 
             <Route path="/account" element={<Account />} />
+
+            <Route
+              path="/orders/:orderId/trackOrder"
+              element={<TrackOrder />}
+            />
           </Route>
 
           <Route element={<OwnerLayout />}>

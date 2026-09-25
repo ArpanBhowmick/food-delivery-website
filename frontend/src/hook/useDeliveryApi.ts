@@ -3,77 +3,88 @@ import { useAxiosPrivate } from "@/hook/useAxiosPrivate";
 const useDeliveryApi = () => {
   const axiosPrivate = useAxiosPrivate();
 
-//   get available delivery assignments
+  //   get available delivery assignments
   const getAvailableDeliveryAssignments = async () => {
-    const response = await axiosPrivate.get(
-      "/delivery/availableAssignments",
+    const response = await axiosPrivate.get("/delivery/availableAssignments");
+
+    return response.data;
+  };
+
+  //   accept delivery assignment
+  const acceptDeliveryAssignment = async (deliveryAssignmentId: string) => {
+    const response = await axiosPrivate.patch(
+      `/delivery/${deliveryAssignmentId}/accept`,
     );
 
     return response.data;
   };
 
-//   accept delivery assignment
-const acceptDeliveryAssignment = async (
-  deliveryAssignmentId: string,
-) => {
-  const response = await axiosPrivate.patch(
-    `/delivery/${deliveryAssignmentId}/accept`,
-  );
+  //   get my active deliveries
+  const getMyActiveDeliveries = async () => {
+    const response = await axiosPrivate.get("/delivery/activeAssignments");
 
-  return response.data;
-};
+    return response.data;
+  };
 
-//   get my active deliveries
-const getMyActiveDeliveries = async () => {
-  const response = await axiosPrivate.get("/delivery/activeAssignments");
-
-  return response.data;
-}
-
-//   verify pickup code
-const verifyPickupCode = async (pickupCode: string) => {
-  const response = await axiosPrivate.post(
-    "/delivery/verifyPickupCode",
-    {
+  //   verify pickup code
+  const verifyPickupCode = async (pickupCode: string) => {
+    const response = await axiosPrivate.post("/delivery/verifyPickupCode", {
       pickupCode,
-    },
-  );
+    });
 
-  return response.data;
-};
+    return response.data;
+  };
 
+  //   confirm pickup
+  const confirmPickup = async (deliveryAssignmentId: string) => {
+    const response = await axiosPrivate.patch(
+      `/delivery/${deliveryAssignmentId}/confirmPickup`,
+    );
 
-//   confirm pickup
-const confirmPickup = async (deliveryAssignmentId: string) => {
-  const response = await axiosPrivate.patch(
-    `/delivery/${deliveryAssignmentId}/confirmPickup`,
-  );
+    return response.data;
+  };
 
-  return response.data;
-}; 
+  // request delivery OTP
+  const requestDeliveryOtp = async (deliveryAssignmentId: string) => {
+    const response = await axiosPrivate.post(
+      `/delivery/${deliveryAssignmentId}/requestDeliveryOtp`,
+    );
 
+    return response.data;
+  };
 
-// request delivery OTP
-const requestDeliveryOtp = async (deliveryAssignmentId: string) => {
-  const response = await axiosPrivate.post(
-    `/delivery/${deliveryAssignmentId}/requestDeliveryOtp`,
-  );
+  // verify delivery OTP
 
-  return response.data;
-};
+  const verifyDeliveryOtp = async (
+    deliveryAssignmentId: string,
+    deliveryOtp: string,
+  ) => {
+    const response = await axiosPrivate.patch(
+      `/delivery/${deliveryAssignmentId}/verifyDeliveryOtp`,
+      {
+        deliveryOtp,
+      },
+    );
 
+    return response.data;
+  };
 
-// verify delivery OTP
+  // get delivery assignments details
+  const getDeliveryAssignmentDetails = async (
+    orderId: string,
+    shopOrderId: string,
+  ) => {
+    const response = await axiosPrivate.get(
+      `/delivery/${orderId}/${shopOrderId}/deliveryDetails`,
+    );
 
-const verifyDeliveryOtp = async (
-  deliveryAssignmentId: string,
-  deliveryOtp: string,
-) => {
-  const response = await axiosPrivate.patch(
-    `/delivery/${deliveryAssignmentId}/verifyDeliveryOtp`,
-    {
-      deliveryOtp,
-    },
+    return response.data;
+  };
+  
+
+const getUserDeliveryTracking = async (orderId: string) => {
+  const response = await axiosPrivate.get(
+    `/delivery/user/${orderId}/tracking`,
   );
 
   return response.data;
@@ -87,6 +98,8 @@ const verifyDeliveryOtp = async (
     confirmPickup,
     requestDeliveryOtp,
     verifyDeliveryOtp,
+    getDeliveryAssignmentDetails,
+    getUserDeliveryTracking
   };
 };
 
