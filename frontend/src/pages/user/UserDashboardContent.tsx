@@ -7,9 +7,13 @@ import RecentOrderCard from "@/components/user/RecentOrderCard";
 import BestShopCard from "@/components/user/BestShopCard";
 import { useSelector } from "react-redux";
 import type { RootState } from "@/store/store";
+import { useState } from "react";
 
 const UserDashboardContent = () => {
   const city = useSelector((state: RootState) => state.location.city);
+
+    const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+
 
   return (
     <div className="min-h-screen bg-[#f3f4f6] p-4 sm:p-6 lg:p-10 font-sans text-gray-800 flex justify-center overflow-x-clip">
@@ -45,13 +49,13 @@ const UserDashboardContent = () => {
           </div>
 
           {/* Category Section */}
-          <CategoryCard />
+          <CategoryCard onCategorySelect={setSelectedCategory} />
 
           {/* best shops in city */}
           <BestShopCard city={city} />
 
           {/* Popular Dishes Section */}
-          <PopularDishCard />
+          <PopularDishCard selectedCategory={selectedCategory} />
 
           {/* Recent Orders Section */}
           <RecentOrderCard />

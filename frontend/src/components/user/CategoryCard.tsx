@@ -1,77 +1,153 @@
-import React from 'react'
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel";
 import burger from "../../assets/burger.png";
 import softDrink from "../../assets/softDrink1.png";
 import croissant from "../../assets/crosaint.png";
-import { ChevronRight } from 'lucide-react';
-import useHorizontalOverflow from "@/hook/useHorizontalOverflow";
-
-const CategoryCard = () => {
-  const { ref, hasOverflow } = useHorizontalOverflow<HTMLDivElement>();
-
-  return (
-    
-    <>
-    
-    {/* Category Section */}
-          <div>
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-bold">Category</h2>
-              {hasOverflow && (
-              <button className="text-sm font-medium text-orange-500 bg-orange-100/50 px-4 py-1.5 rounded-full flex items-center gap-1 hover:bg-orange-100 transition cursor-pointer">
-                View all <ChevronRight size={16} />
-              </button>
-              )}
-            </div>
-
-            <div ref={ref} className="flex gap-4 overflow-x-auto pb-2 snap-x snap-mandatory md:grid md:grid-cols-3 md:gap-6 md:overflow-visible md:pb-0 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-              {/* Bakery */}
-              <div className="relative bg-[#4a1215] rounded-3xl h-40 overflow-hidden group cursor-pointer flex items-center min-w-[280px] snap-start md:min-w-0">
-                <div className="relative z-10 pl-6 w-1/2">
-                  <h3 className="text-white text-xl md:text-2xl font-bold">
-                    Bakery
-                  </h3>
-                </div>
-                <img
-                  // src={bakery}
-                  src={croissant}
-                  alt="Bakery"
-                  className="absolute -right-2 top-1/2 -translate-y-1/2 w-40 h-40 object-contain drop-shadow-2xl group-hover:scale-110 transition duration-300"
-                />
-              </div>
-
-              {/* Burger */}
-              <div className="relative bg-[#f07b22] rounded-3xl h-40 overflow-hidden group cursor-pointer flex items-center min-w-[280px] snap-start md:min-w-0">
-                <div className="relative z-10 pl-6 w-1/2">
-                  <h3 className="text-white text-xl md:text-2xl font-bold">
-                    Burger
-                  </h3>
-                </div>
-                <img
-                  src={burger}
-                  alt="Burger"
-                  className="absolute -right-2 top-1/2 -translate-y-1/2 w-40 h-40 object-contain drop-shadow-2xl group-hover:scale-110 transition duration-300"
-                />
-              </div>
-
-              {/* Beverage */}
-              <div className="relative bg-[#d6270e] rounded-3xl h-40 overflow-hidden group cursor-pointer flex items-center min-w-[280px] snap-start md:min-w-0">
-                <div className="relative z-10 pl-6 w-1/2">
-                  <h3 className="text-white text-xl md:text-2xl font-bold">
-                    Beverage
-                  </h3>
-                </div>
-                <img
-                  src={softDrink}
-                  alt="Beverage"
-                  className="absolute right-0 top-1/2 -translate-y-1/2 w-32 h-40 object-contain drop-shadow-2xl group-hover:scale-110 transition duration-300"
-                />
-              </div>
-            </div>
-          </div>
-
-    </>
-    
-  )
+import {
+  Cake,
+  ChevronRight,
+  Cookie,
+  Drumstick,
+  Flame,
+  LayoutGrid,
+  MoreHorizontal,
+  Pizza,
+  Sandwich,
+  Soup,
+  Wheat,
+  Zap,
+} from "lucide-react";
+interface CategoryCardProps {
+  onCategorySelect: (category: string | null) => void;
 }
 
-export default CategoryCard
+type Category = {
+  name: string;
+  value: string | null;
+  image?: string;
+  icon?: typeof Cookie;
+};
+
+type CardTone = {
+  surface: string;
+  border: string;
+  label: string;
+  glyph: string;
+};
+
+const tonePalette: CardTone[] = [
+  {
+    surface: "bg-orange-50",
+    border: "border-orange-100",
+    label: "text-orange-900",
+    glyph: "text-orange-300",
+  },
+  {
+    surface: "bg-violet-50",
+    border: "border-violet-100",
+    label: "text-violet-900",
+    glyph: "text-violet-300",
+  },
+  {
+    surface: "bg-sky-50",
+    border: "border-sky-100",
+    label: "text-sky-900",
+    glyph: "text-sky-300",
+  },
+  {
+    surface: "bg-emerald-50",
+    border: "border-emerald-100",
+    label: "text-emerald-900",
+    glyph: "text-emerald-300",
+  },
+  {
+    surface: "bg-amber-50",
+    border: "border-amber-100",
+    label: "text-amber-900",
+    glyph: "text-amber-300",
+  },
+  {
+    surface: "bg-rose-50",
+    border: "border-rose-100",
+    label: "text-rose-900",
+    glyph: "text-rose-300",
+  },
+];
+
+const categories: Category[] = [
+  { name: "All", value: null, icon: LayoutGrid },
+  { name: "Bakery", value: "Bakery", image: croissant },
+  { name: "Burger", value: "Burger", image: burger },
+  { name: "Beverages", value: "Beverages", image: softDrink },
+  { name: "Snacks", value: "Snacks", icon: Cookie },
+  { name: "Main Course", value: "Main Course", icon: Drumstick },
+  { name: "Dessert", value: "Dessert", icon: Cake },
+  { name: "Pizza", value: "Pizza", icon: Pizza },
+  { name: "Sandwich", value: "Sandwich", icon: Sandwich },
+  { name: "North Indian", value: "North Indian", icon: Flame },
+  { name: "South Indian", value: "South Indian", icon: Wheat },
+  { name: "Chinese", value: "Chinese", icon: Soup },
+  { name: "Fast Food", value: "Fast Food", icon: Zap },
+  { name: "Others", value: "Others", icon: MoreHorizontal },
+];
+
+const CategoryCard = ({ onCategorySelect }: CategoryCardProps) => {
+  return (
+    <div>
+      <div className="mb-4 flex items-center justify-between">
+        <h2 className="text-xl font-bold">Category</h2>
+        <button className="flex cursor-pointer items-center gap-1 rounded-full bg-orange-100/50 px-4 py-1.5 text-sm font-medium text-orange-500 transition hover:bg-orange-100">
+          View all <ChevronRight size={16} />
+        </button>
+      </div>
+
+      <Carousel className="w-full" aria-label="Categories">
+        <CarouselContent>
+          {categories.map(({ name, value, image, icon: Icon }, index) => {
+            const tone = tonePalette[index % tonePalette.length];
+
+            return (
+              <CarouselItem
+                key={name}
+                className="min-w-[200px] basis-[70%] sm:basis-[50%] md:basis-[33%] lg:basis-[24%] xl:basis-[18.2%]"
+              >
+                <div
+                  onClick={() => onCategorySelect(value)}
+                  className={`group flex h-36 cursor-pointer items-center gap-1 overflow-hidden rounded-3xl border p-4 shadow-xs transition duration-300 hover:-translate-y-0.5 hover:shadow-md ${tone.surface} ${tone.border}`}
+                >
+                  <h3
+                    className={`min-w-0 flex-1 text-lg font-bold leading-tight md:text-xl ${tone.label}`}
+                  >
+                    {name}
+                  </h3>
+
+                  {image ? (
+                    <img
+                      src={image}
+                      alt={name}
+                      className="h-20 w-20 shrink-0 object-contain drop-shadow-sm transition duration-300 group-hover:scale-110 sm:h-24 sm:w-24"
+                    />
+                  ) : Icon ? (
+                    <Icon
+                      aria-hidden="true"
+                      className={`h-16 w-16 shrink-0 transition duration-300 group-hover:scale-110 sm:h-20 sm:w-20 ${tone.glyph}`}
+                    />
+                  ) : null}
+                </div>
+              </CarouselItem>
+            );
+          })}
+        </CarouselContent>
+        <CarouselPrevious className="inset-y-auto left-3 top-1/2 my-0 z-10 -translate-y-1/2 border-white/80 bg-white/90 text-gray-700 shadow-md backdrop-blur hover:bg-white disabled:hidden" />
+        <CarouselNext className="inset-y-auto right-3 top-1/2 my-0 z-10 -translate-y-1/2 border-white/80 bg-white/90 text-gray-700 shadow-md backdrop-blur hover:bg-white disabled:hidden" />
+      </Carousel>
+    </div>
+  );
+};
+
+export default CategoryCard;
