@@ -7,6 +7,7 @@ import {
   editItem,
   getItemsByCity,
   getItemsByShop,
+  getPublicItemsByShop,
 } from "../controllers/item.controller.js";
 
 const itemRouter = express.Router();
@@ -21,6 +22,9 @@ itemRouter.get("/city", verifyJWT, getItemsByCity);
 
 // update/edit shop route
 itemRouter.put("/:shopId/:itemId", verifyJWT, upload.single("image"), editItem);
+
+// get all items by shop (customer facing, no ownership check)
+itemRouter.get("/shop/:shopId", getPublicItemsByShop);
 
 // get all items by shop
 itemRouter.get("/:shopId", verifyJWT, getItemsByShop);

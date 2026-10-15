@@ -1,6 +1,7 @@
 import { useAxiosPrivate } from "@/hook/useAxiosPrivate";
 import type { CartItem } from "@/store/cartSlice";
-import type { PaymentMethodType } from "@/components/user/checkout/PaymentMethod";
+import type { PaymentMethodType } from "@/types/payment";
+
 
 interface DeliveryAddress {
   text: string;
@@ -13,6 +14,8 @@ interface CreateOrderData {
   paymentMethod: PaymentMethodType;
   deliveryAddress: DeliveryAddress;
 }
+
+
 
 const useOrderApi = () => {
   const axiosPrivate = useAxiosPrivate();
@@ -56,10 +59,26 @@ const useOrderApi = () => {
     return response.data;
   };
 
+
+  // Verify Razorpay Checkout payment
+const verifyCheckoutPayment = async (data: {
+  razorpay_order_id: string;
+  razorpay_payment_id: string;
+  razorpay_signature: string;
+}) => {
+  const response = await axiosPrivate.post(
+    "/payment/checkout/verify",
+    data,
+  );
+
+  return response.data;
+};
+
   return {
     createOrder,
     getOrders,
     updateOrderStatus,
+    verifyCheckoutPayment,
   };
 };
 

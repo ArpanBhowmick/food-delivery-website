@@ -24,7 +24,10 @@ import Account from "./pages/user/Account";
 import OwnerOrders from "./pages/owner/OwnerOrders";
 import DeliveryLayout from "./pages/deliveryBoy/DeliveryLayout";
 import TrackOrder from "./pages/user/TrackOrder";
+import ShopPage from "./pages/user/ShopPage";
 // import OwnerOrders from "./pages/owner/OwnerOrders";
+
+
 
 const App = () => {
   return (
@@ -61,6 +64,8 @@ const App = () => {
               path="/orders/:orderId/trackOrder"
               element={<TrackOrder />}
             />
+
+            <Route path="/shop/:shopId" element={<ShopPage />} />
           </Route>
 
           <Route element={<OwnerLayout />}>

@@ -23,6 +23,13 @@ export const useItemApi = () => {
   }, [axiosPrivate]) 
 
 
+  // get all items by shop (customer facing, no ownership check)
+  const getPublicItemsByShop = useCallback(async (shopId: string) => {
+    const response = await axiosPrivate.get(`/item/shop/${shopId}`);
+    return response.data;
+  }, [axiosPrivate])
+
+
   // delete item
   const deleteItem = async (shopId: string, itemId: string) => {
     const response = await axiosPrivate.delete(`/item/${shopId}/${itemId}`);
@@ -45,6 +52,7 @@ export const useItemApi = () => {
     addShopItem,
     editItem,
     getItemsByShop,
+    getPublicItemsByShop,
     deleteItem,
     getItemsByCity
   };

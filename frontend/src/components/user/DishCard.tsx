@@ -1,4 +1,8 @@
-import { addToCart, decreaseQuantity, increaseQuantity } from "@/store/cartSlice";
+import {
+  addToCart,
+  decreaseQuantity,
+  increaseQuantity,
+} from "@/store/cartSlice";
 import type { AppDispatch, RootState } from "@/store/store";
 import type { IItem } from "@/types/item.types";
 import { Star } from "lucide-react";
@@ -22,26 +26,27 @@ export const DishCard = ({ dish }: DishCardProps) => {
   const count = cartItem?.quantity ?? 0;
 
   return (
-    <div className="flex h-[340px] min-w-0 flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md cursor-pointer">
-      <div className="relative shrink-0">
+    <div className="flex h-full cursor-pointer flex-col overflow-hidden rounded-[1.5rem] border border-gray-200 bg-white shadow-sm transition-all hover:-translate-y-1 hover:shadow-md">
+      <div className="relative h-48 w-full shrink-0">
         <img
           src={dish.image?.url ?? "/placeholder-shop.jpg"}
           alt={dish.name}
-          className="h-44 w-full object-cover"
+          className="h-full w-full object-cover"
         />
         {dish.foodType === "veg" ? (
-          <span className="absolute right-2 top-2 inline-flex items-center gap-1 rounded-md border border-emerald-200 bg-white px-1.5 py-0.5 text-[10px] font-bold text-emerald-700 shadow-sm">
-            <span className="size-1.5 rounded-full bg-emerald-500"></span>
+          <span className="absolute right-3 top-3 inline-flex items-center gap-1.5 rounded-lg border border-emerald-200 bg-white/90 px-2 py-1 text-xs font-bold text-emerald-700 shadow-sm backdrop-blur-sm">
+            <span className="size-2 rounded-full bg-emerald-500"></span>
             Veg
           </span>
         ) : (
-          <span className="absolute right-2 top-2 inline-flex items-center gap-1 rounded-md border border-rose-200 bg-white px-1.5 py-0.5 text-[10px] font-bold text-rose-700 shadow-sm">
-            <span className="size-1.5 rounded-full bg-rose-500"></span>
+          <span className="absolute right-3 top-3 inline-flex items-center gap-1.5 rounded-lg border border-rose-200 bg-white/90 px-2 py-1 text-xs font-bold text-rose-700 shadow-sm backdrop-blur-sm">
+            <span className="size-2 rounded-full bg-rose-500"></span>
             Non-Veg
           </span>
         )}
       </div>
-      <div className="flex min-h-0 flex-1 flex-col p-4">
+
+      <div className="flex flex-1 flex-col p-5">
         <div className="mb-2 flex items-center justify-between gap-2">
           <span className="flex items-center gap-1">
             <Star size={14} className="fill-[#7e22ce] text-[#7e22ce]" />
@@ -51,16 +56,19 @@ export const DishCard = ({ dish }: DishCardProps) => {
             {dish.category}
           </span>
         </div>
-        <h3 className="mb-1 line-clamp-1 text-[15px] font-bold leading-tight text-gray-800">
+
+        <h3 className="mb-1.5 line-clamp-1 text-lg font-bold leading-tight text-gray-800">
           {dish.name}
         </h3>
+
         {dish.description && (
-          <p className="mb-2 line-clamp-2 break-words text-xs leading-relaxed text-gray-400">
+          <p className="mb-4 line-clamp-2 break-words text-sm leading-relaxed text-gray-500">
             {dish.description}
           </p>
         )}
-        <div className="mt-auto flex items-center justify-between gap-2 pt-2">
-          <p className="font-bold text-[#7e22ce]">₹{dish.price}</p>
+
+        <div className="mt-auto flex h-14 shrink-0 items-center justify-between gap-2 border-t border-gray-100 pt-4">
+          <p className="text-lg font-bold text-gray-900">₹{dish.price}</p>
           {count === 0 ? (
             <button
               onClick={() => dispatch(addToCart(dish))}

@@ -286,7 +286,7 @@ export const getItemsByCity = async (req: AuthRequest, res: Response) => {
     const items = await Item.find({
       shop: { $in: shopIds },
     }).lean()
-      .limit(5);
+      // .limit(5);
 
     return res.status(200).json({
       success: true,
@@ -301,3 +301,46 @@ export const getItemsByCity = async (req: AuthRequest, res: Response) => {
     });
   }
 };
+
+
+
+
+
+// get all items by shop (customer facing, no ownership check)
+export const getPublicItemsByShop = async (
+  req: AuthRequest,
+  res: Response,
+) => {
+  try {
+    const { shopId } = req.params as { shopId: string };
+
+    // Find the shop
+    const shop = await Shop.findById(shopId);
+
+    if (!shop) {
+      return res.status(404).json({
+        success: false,
+        message: "Shop not found",
+      });
+    }
+
+    // Find all items of this shop
+    const items = await Item.find({ shop: shopId });
+
+    return res.status(200).json({
+      success: true,
+      message: "Items found",
+      items,
+    });
+  } catch (error) {
+    console.log(error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Failed to fetch shop items",
+    });
+  }
+};
+
+
+

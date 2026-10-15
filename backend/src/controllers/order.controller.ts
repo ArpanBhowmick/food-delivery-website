@@ -7,6 +7,8 @@ import { User } from "../models/user.model.js";
 import type { AuthRequest } from "../types/types.js";
 import { DeliveryAssignment } from "../models/deliveryAssignment.model.js";
 import { getIO } from "../socket/io.js";
+import { createRazorpayOrder, createRazorpayQr, getRazorpayKeyId } from "../services/razorpay.service.js";
+import { Payment } from "../models/payment.model.js";
 
 // Defines the expected shape of cart items.
 interface CartItemInput {
@@ -14,17 +16,10 @@ interface CartItemInput {
   quantity: number;
 }
 
-// Defines the expected delivery location details.
-interface DeliveryAddressInput {
-  text: string;
-  latitude: number;
-  longitude: number;
-}
-
 // Defines the accepted order request fields.
 interface CreateOrderRequest {
   cartItems?: unknown;
-  paymentMethod?: unknown;
+  paymentMethod?: "cod" | "qr" | "upi";
   deliveryAddress?: unknown;
 }
 
@@ -34,8 +29,6 @@ type OwnerOrderStatus = "placed" | "preparing" | "outForDelivery";
 // Checks whether a value is a non-null object.
 const isObject = (value: unknown): value is Record<string, unknown> =>
   typeof value === "object" && value !== null;
-
-
 
 export const createOrder = async (req: AuthRequest, res: Response) => {
   try {
@@ -59,22 +52,15 @@ export const createOrder = async (req: AuthRequest, res: Response) => {
       });
     }
 
-    // if (
-    //   paymentMethod !== "cod" &&
-    //   paymentMethod !== "upi" &&
-    //   paymentMethod !== "card"
-    // ) {
-    //   return res.status(400).json({
-    //     success: false,
-    //     message: "A valid payment method is required",
-    //   });
-    // }
-
     // Only COD is currently supported.
-    if (paymentMethod !== "cod") {
+    if (
+      paymentMethod !== "cod" &&
+      paymentMethod !== "qr" &&
+      paymentMethod !== "upi"
+    ) {
       return res.status(400).json({
         success: false,
-        message: "Only cash on delivery is currently supported",
+        message: "Invalid payment method",
       });
     }
 
@@ -272,8 +258,7 @@ export const createOrder = async (req: AuthRequest, res: Response) => {
     const order = await Order.create({
       user: user._id,
       shopOrders,
-      paymentMethod,
-      paymentStatus: "pending",
+
       deliveryAddress: {
         text: addressText.trim(),
         latitude,
@@ -287,6 +272,65 @@ export const createOrder = async (req: AuthRequest, res: Response) => {
       },
       orderStatus: "placed",
     });
+
+    const payment = await Payment.create({
+      order: order._id,
+      user: user._id,
+      method: paymentMethod,
+      status: "pending",
+      amount: totalAmount,
+      currency: "INR",
+      provider: "razorpay",
+    });
+
+    if (paymentMethod === "qr") {
+      const qr = await createRazorpayQr(totalAmount, order._id.toString());
+
+      payment.qrCodeId = qr.id;
+
+      if (qr.close_by) {
+        payment.qrExpiresAt = new Date(qr.close_by * 1000);
+      }
+
+      await payment.save();
+
+      console.log("QR CREATED:", {
+        qrCodeId: payment.qrCodeId,
+        qrExpiresAt: payment.qrExpiresAt,
+      });
+
+      return res.status(201).json({
+        success: true,
+        message: "Payment QR created successfully",
+        order,
+        payment,
+        qr,
+      });
+    }
+
+    // Handle UPI payment method by creating a Razorpay order.
+    if (paymentMethod === "upi") {
+  const razorpayOrder = await createRazorpayOrder({
+    amountInRupees: totalAmount,
+    receipt: order._id.toString(),
+  });
+
+  payment.providerOrderId = razorpayOrder.id;
+  await payment.save();
+
+  return res.status(201).json({
+    success: true,
+    message: "Online payment order created successfully",
+    order,
+    payment,
+    razorpay: {
+      keyId: getRazorpayKeyId(),
+      orderId: razorpayOrder.id,
+      amount: razorpayOrder.amount,
+      currency: razorpayOrder.currency,
+    },
+  });
+}
 
     // Return the created order.
     return res.status(201).json({
@@ -410,7 +454,7 @@ export const getOrders = async (req: AuthRequest, res: Response) => {
 
     // Select only the order fields needed by the clients.
     const orderFields =
-      "user shopOrders paymentMethod paymentStatus deliveryAddress pricing orderStatus createdAt deliveredAt";
+      "user shopOrders deliveryAddress pricing orderStatus createdAt deliveredAt";
 
     if (user.role === "owner") {
       // Find orders containing at least one shop owned by this owner.

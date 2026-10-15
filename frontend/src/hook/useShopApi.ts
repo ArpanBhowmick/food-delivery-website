@@ -27,6 +27,12 @@ export const useShopApi = () => {
     return response.data;
   };
 
+  // get public shop by id (user facing, no ownership check)
+  const getPublicShopById = async (shopId: string) => {
+    const response = await axiosPrivate.get(`/shop/shop/${shopId}`);
+    return response.data;
+  };
+
   // get all shops by city
   const getShopsByCity = async (city: string) => {
     const response = await axiosPrivate.get("/shop/city", {
@@ -44,6 +50,7 @@ export const useShopApi = () => {
     editShop,
     getOwnerShops,
     getShopById,
+    getPublicShopById,
     getShopsByCity,
   };
 };

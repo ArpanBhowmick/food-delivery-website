@@ -137,8 +137,8 @@ const MyOrders = () => {
                         shopOrder.items.map((item) => {
                           console.log("FULL ITEM:", item);
                           console.log("DIRECT IMAGE:", item.image);
-                          console.log("NESTED IMAGE:", item.item.image);
-                          console.log("NESTED TYPE:", typeof item.item.image);
+                          console.log("NESTED IMAGE:", item.item?.image);
+                          console.log("NESTED TYPE:", typeof item.item?.image);
 
                           return (
                             <div

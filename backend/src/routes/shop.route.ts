@@ -1,6 +1,6 @@
 import express from "express"
 import { verifyJWT } from "../middleware/verifyJWT.js"
-import { createShop, editShop, getOwnerShops, getShopById, getShopsByCity } from "../controllers/shop.controller.js"
+import { createShop, editShop, getOwnerShops, getPublicShopById, getShopById, getShopsByCity } from "../controllers/shop.controller.js"
 import { upload } from "../middleware/multer.js"
 
 
@@ -18,6 +18,10 @@ shopRouter.get("/owner", verifyJWT, getOwnerShops)
 
 // get all shops by city route
 shopRouter.get("/city", verifyJWT, getShopsByCity)
+
+
+// get public shop by id route
+shopRouter.get("/shop/:shopId", getPublicShopById)
 
 
 // get shop by id route

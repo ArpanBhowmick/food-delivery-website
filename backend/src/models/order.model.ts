@@ -26,13 +26,13 @@ interface IShopOrder {
 export interface IOrder {
   user: mongoose.Types.ObjectId;
 
-    deliveredAt?: Date;
+  deliveredAt?: Date;
 
   shopOrders: IShopOrder[];
 
-  paymentMethod: "cod" | "upi" | "card";
+  // paymentMethod: "cod" | "online";
 
-  paymentStatus: "pending" | "paid" | "failed" | "refunded";
+  // paymentStatus: "pending" | "paid" | "failed" | "refunded";
 
   deliveryAddress: {
     text: string;
@@ -70,9 +70,9 @@ const shopOrderItemsSchema = new mongoose.Schema(
     },
 
     image: {
-  type: String,
-  required: true,
-},
+      type: String,
+      required: true,
+    },
 
     price: {
       type: Number,
@@ -123,13 +123,7 @@ const shopOrderSchema = new mongoose.Schema(
 
     orderStatus: {
       type: String,
-      enum: [
-        "placed",      
-        "preparing",
-        "outForDelivery",
-        "delivered",
-        "cancelled",
-      ],
+      enum: ["placed", "preparing", "outForDelivery", "delivered", "cancelled"],
       default: "placed",
     },
   },
@@ -146,25 +140,25 @@ const orderSchema = new mongoose.Schema(
     },
 
     deliveredAt: {
-  type: Date,
-},
+      type: Date,
+    },
 
     shopOrders: {
       type: [shopOrderSchema],
       required: true,
     },
 
-    paymentMethod: {
-      type: String,
-      enum: ["cod", "upi", "card"],
-      required: true,
-    },
+    //     paymentMethod: {
+    //   type: String,
+    //   enum: ["cod", "online"],
+    //   required: true,
+    // },
 
-    paymentStatus: {
-      type: String,
-      enum: ["pending", "paid", "failed", "refunded"],
-      default: "pending",
-    },
+    //     paymentStatus: {
+    //       type: String,
+    //       enum: ["pending", "paid", "failed", "refunded"],
+    //       default: "pending",
+    //     },
 
     deliveryAddress: {
       text: {
@@ -211,13 +205,7 @@ const orderSchema = new mongoose.Schema(
 
     orderStatus: {
       type: String,
-      enum: [
-        "placed",      
-        "preparing",
-        "outForDelivery",
-        "delivered",
-        "cancelled",
-      ],
+      enum: ["placed", "preparing", "outForDelivery", "delivered", "cancelled"],
       default: "placed",
     },
   },

@@ -67,11 +67,11 @@ const PopularDishCard = ({
       </div>
 
       <Carousel className="w-full" aria-label="Popular dishes">
-        <CarouselContent>
+        <CarouselContent className="py-2">
           {filteredItems.map((item) => (
             <CarouselItem
               key={item._id}
-              className="w-[220px] min-w-[220px] basis-auto sm:w-[240px] sm:min-w-[240px] lg:w-[260px] lg:min-w-[260px]"
+              className="w-[220px] min-w-[220px] basis-auto sm:w-[240px] sm:min-w-[240px] lg:w-[260px] lg:min-w-[275px]"
             >
               <DishCard dish={item} />
             </CarouselItem>

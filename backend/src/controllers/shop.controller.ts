@@ -272,3 +272,42 @@ export const getShopsByCity = async (req: AuthRequest, res: Response) => {
     });
   }
 };
+
+
+// get public shop by id (user facing, no ownership check)
+
+export const getPublicShopById = async (req: AuthRequest, res: Response) => {
+  try {
+    const { shopId } = req.params as { shopId: string };
+
+    const shop = await Shop.findById(shopId);
+
+    if (!shop) {
+      return res.status(404).json({
+        success: false,
+        message: "Shop not found",
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      shop,
+    });
+  } catch (error) {
+    console.error("getPublicShopById:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Failed to fetch shop",
+    });
+  }
+};
+
+
+
+
+
+
+
+
+
