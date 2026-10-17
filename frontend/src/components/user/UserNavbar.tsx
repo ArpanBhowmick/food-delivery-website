@@ -1,5 +1,4 @@
-import { Search, ChevronDown, X, Navigation } from "lucide-react";
-import { GrMapLocation } from "react-icons/gr";
+import { Search, ChevronDown, X } from "lucide-react";
 import { LuCircleUser } from "react-icons/lu";
 import { IoCartOutline } from "react-icons/io5";
 import { useState, useRef, useEffect, useCallback } from "react";
@@ -8,8 +7,8 @@ import { useSelector } from "react-redux";
 import type { RootState } from "@/store/store";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import useLogout from "@/hook/useLogout";
-import useLocation from "@/hook/useLocation";
 import CartDrawer from "./cart/CartDrawer";
+import AddressModal from "@/components/user/location/AddressModal";
 import CheckoutDrawer from "./CheckoutDrawer";
 import { useSearchApi } from "@/hook/useSearchApi";
 import SearchResults from "./searchbar/SearchResults";
@@ -55,7 +54,6 @@ export default function UserNavbar() {
   );
 
   const logOut = useLogout();
-  const getCurrentLocation = useLocation();
 
   // Close dropdown if clicked outside
   useEffect(() => {
@@ -305,75 +303,7 @@ export default function UserNavbar() {
       )}
       {/* Location modal */}
       {locationOpen && (
-        <div>
-          {/* Background Overlay - Added a subtle blur for a premium feel */}
-          <div className="fixed inset-0 z-50 bg-black/40 " />
-
-          {/* Modal Wrapper */}
-          <div
-            className="fixed inset-0 z-50 flex items-center justify-center p-4"
-            onClick={() => setLocationOpen(false)}
-          >
-            {/* Modal Content - Increased border radius to rounded-3xl for the app look */}
-            <div
-              className="relative w-full max-w-[340px] rounded-[24px] border border-border bg-background p-6 shadow-2xl"
-              onClick={(e) => e.stopPropagation()}
-            >
-              {/* Absolute Close Button */}
-              <button
-                className="absolute right-4 top-4 cursor-pointer rounded-full p-1 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-                onClick={() => setLocationOpen(false)}
-              >
-                <X className="h-5 w-5 stroke-[2]" />
-              </button>
-
-              {/* Header Section: Icon & Title */}
-              <div className="mt-4 flex flex-col items-center text-center mb-8">
-                <div className="mb-4 flex flex-col items-center justify-center">
-                  <GrMapLocation
-                    className="h-10 w-10 text-[#7e22ce]"
-                    strokeWidth={2}
-                  />
-                </div>
-                <h2 className="text-xl font-bold leading-tight text-foreground">
-                  Choose your
-                  <br />
-                  delivery address
-                </h2>
-              </div>
-
-              {/* Action Section */}
-              <div className="flex flex-col gap-3">
-                {/* Use Current Location Button - Rounded full, text left, icon right */}
-                <button
-                  className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-full bg-[#7e22ce] py-3.5 text-[15px] font-semibold text-white transition-all hover:brightness-110 active:scale-[0.98]"
-                  onClick={async () => {
-                    const success = await getCurrentLocation();
-
-                    if (success) {
-                      setLocationOpen(false);
-                    }
-                  }}
-                >
-                  Use Current Location
-                  <Navigation className="h-4 w-4" fill="currentColor" />
-                </button>
-
-                {/* Search Input - Rounded full to match */}
-                <div className="relative">
-                  <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 text-muted-foreground">
-                    <Search className="h-4 w-4" />
-                  </div>
-                  <input
-                    type="text"
-                    placeholder="Search your address"
-                    className="flex h-12.5 w-full rounded-full border border-[#aaa] bg-transparent px-3 py-1 pl-11 pr-4 text-sm text-foreground shadow-md  transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[#7e22ce]"
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+        <AddressModal onClose={() => setLocationOpen(false)} />
       )}
 
       <header>
