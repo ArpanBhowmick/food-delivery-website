@@ -764,3 +764,140 @@ export const updateOrderStatus = async (req: AuthRequest, res: Response) => {
     });
   }
 };
+
+
+
+
+
+// get shop orders by owner with server-side pagination
+
+export const getShopOrders = async (req: AuthRequest, res: Response) => {
+  try {
+    const userId = req.userId;
+
+    if (!userId) {
+      return res.status(401).json({
+        success: false,
+        message: "User is not authenticated",
+      });
+    }
+
+    const { shopId } = req.params;
+
+    if (
+      typeof shopId !== "string" ||
+      !mongoose.Types.ObjectId.isValid(shopId)
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: "A valid shop id is required",
+      });
+    }
+
+    const page = Number(req.query.page ?? 1);
+    const limit = Number(req.query.limit ?? 50);
+
+    if (!Number.isInteger(page) || page < 1) {
+      return res.status(400).json({
+        success: false,
+        message: "page must be a positive integer",
+      });
+    }
+
+    if (!Number.isInteger(limit) || limit < 1 || limit > 50) {
+      return res.status(400).json({
+        success: false,
+        message: "limit must be a positive integer no greater than 50",
+      });
+    }
+
+    const user = await User.findById(userId).select("role");
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    if (user.role !== "owner") {
+      return res.status(403).json({
+        success: false,
+        message: "Only owners can view shop orders",
+      });
+    }
+
+    const shop = await Shop.findById(shopId).select("_id owner");
+
+    if (!shop) {
+      return res.status(404).json({
+        success: false,
+        message: "Shop not found",
+      });
+    }
+
+    if (shop.owner.toString() !== userId) {
+      return res.status(403).json({
+        success: false,
+        message: "You are not authorized to view orders for this shop",
+      });
+    }
+
+    const ownerObjectId = new mongoose.Types.ObjectId(userId);
+
+    // One record per matching shop order: unwind the shopOrders array, keep
+    // only this shop's entries owned by this owner, then sort newest first.
+    // Each remaining record gets its single shop order wrapped back into an
+    // array so the response shape stays the same as getOrders.
+    const shopOrdersAggregation: mongoose.PipelineStage[] = [
+      { $match: { "shopOrders.owner": ownerObjectId } },
+      { $unwind: "$shopOrders" },
+      {
+        $match: {
+          "shopOrders.owner": ownerObjectId,
+          "shopOrders.shop": shop._id,
+        },
+      },
+      { $addFields: { shopOrders: ["$shopOrders"] } },
+      { $sort: { createdAt: -1, _id: -1 } },
+      {
+        $facet: {
+          orders: [
+            { $skip: (page - 1) * limit },
+            { $limit: limit },
+          ],
+          totalCount: [{ $count: "count" }],
+        },
+      },
+    ];
+
+    const [aggregationResult] = await Order.aggregate(shopOrdersAggregation);
+
+    const orders = aggregationResult?.orders ?? [];
+    const totalOrders = aggregationResult?.totalCount[0]?.count ?? 0;
+
+    await Order.populate(orders, [
+      { path: "user", select: "name email mobile" },
+      { path: "shopOrders.shop", select: "name owner" },
+      { path: "shopOrders.items.item", select: "name image price" },
+    ]);
+
+    return res.status(200).json({
+      success: true,
+      orders,
+      pagination: {
+        currentPage: page,
+        limit,
+        totalOrders,
+        totalPages: Math.ceil(totalOrders / limit),
+      },
+    });
+  } catch (error) {
+    console.error("getShopOrders:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Failed to fetch shop orders",
+    });
+  }
+};

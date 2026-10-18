@@ -45,7 +45,7 @@ interface Order {
   _id: string;
   user: OrderUser;
   createdAt: string;
-  paymentMethod: string;
+  paymentMethod?: string;
   deliveryAddress?: { text: string };
   pricing?: { totalAmount: number };
   orderStatus: OrderStatus;
@@ -421,7 +421,9 @@ export default function OwnerOrders() {
                     <span className="text-slate-600">
                       Payment:{" "}
                       <span className="font-medium text-slate-800">
-                        {order.paymentMethod.toUpperCase()}
+                        {order.paymentMethod
+  ? order.paymentMethod.toUpperCase()
+  : "N/A"}
                       </span>
                     </span>
                     <span className="font-bold text-slate-900">

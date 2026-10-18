@@ -74,11 +74,29 @@ const verifyCheckoutPayment = async (data: {
   return response.data;
 };
 
+// get shop orders for a specific shop by owner (server-side pagination)
+const getShopOrders = async (
+  shopId: string,
+  page = 1,
+  limit = 50
+) => {
+  const response = await axiosPrivate.get(
+    `/order/shop/${shopId}/orders`,
+    {
+      params: { page, limit },
+    }
+  );
+
+  return response.data;
+};
+
+// Return the API functions from the hook
   return {
     createOrder,
     getOrders,
     updateOrderStatus,
     verifyCheckoutPayment,
+    getShopOrders,
   };
 };
 

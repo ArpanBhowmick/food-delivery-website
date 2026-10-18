@@ -196,7 +196,7 @@ export default function ShopDetails() {
         </>
       )}
 
-      <RecentOrders />
+      <RecentOrders shopId={shop._id} />
     </div>
   );
 }

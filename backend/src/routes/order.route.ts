@@ -2,6 +2,7 @@ import express from "express";
 import {
   createOrder,
   getOrders,
+  getShopOrders,
   updateOrderStatus,
 } from "../controllers/order.controller.js";
 import { verifyJWT } from "../middleware/verifyJWT.js";
@@ -26,5 +27,8 @@ orderRouter.patch(
   verifyJWT,
   updateOrderStatus,
 );
+
+// get orders for a specific shop by owner
+orderRouter.get("/shop/:shopId/orders", verifyJWT, getShopOrders);
 
 export default orderRouter;
