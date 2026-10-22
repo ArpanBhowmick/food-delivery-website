@@ -1,6 +1,6 @@
 import express from "express"
 import { verifyJWT } from "../middleware/verifyJWT.js"
-import { createShop, editShop, getOwnerShops, getPublicShopById, getShopById, getShopsByCity } from "../controllers/shop.controller.js"
+import { createShop, deleteShop, editShop, getOwnerShops, getPublicShopById, getShopById, getShopsByCity } from "../controllers/shop.controller.js"
 import { upload } from "../middleware/multer.js"
 
 
@@ -12,6 +12,10 @@ shopRouter.post("/",verifyJWT, upload.single("image"), createShop)
 
 // update shop route
 shopRouter.put("/:shopId", verifyJWT, upload.single("image"), editShop)
+
+
+// delete shop route
+shopRouter.delete("/:shopId", verifyJWT, deleteShop);
 
 // get all owner shops route
 shopRouter.get("/owner", verifyJWT, getOwnerShops)

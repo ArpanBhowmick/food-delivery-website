@@ -23,6 +23,18 @@ const shopSlice = createSlice({
       state.selectedShop = action.payload;
     },
 
+    removeShop: (state, action: PayloadAction<string>) => {
+      state.shops = state.shops.filter((shop) => shop._id !== action.payload);
+    },
+
+    deactivateShop: (state, action: PayloadAction<string>) => {
+      const shop = state.shops.find((shop) => shop._id === action.payload);
+
+      if (shop) {
+        shop.isActive = false;
+      }
+    },
+
     clearSelectedShop: (state) => {
       state.selectedShop = null;
     },
@@ -34,7 +46,13 @@ const shopSlice = createSlice({
   },
 });
 
-export const { setShops, setSelectedShop, clearSelectedShop, clearShops } =
-  shopSlice.actions;
+export const {
+  setShops,
+  setSelectedShop,
+  removeShop,
+  deactivateShop,
+  clearSelectedShop,
+  clearShops,
+} = shopSlice.actions;
 
 export default shopSlice.reducer;

@@ -16,6 +16,7 @@ export interface IShop extends Document {
   state: string;
   address: string;
   location: IGeoLocation;
+  isActive: boolean;
 }
 
 const shopSchema = new mongoose.Schema<IShop>(
@@ -40,6 +41,13 @@ const shopSchema = new mongoose.Schema<IShop>(
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
       required: true,
+    },
+
+    // Shops saved before this field existed are treated as active
+    // (queries must filter with isActive: { $ne: false }).
+    isActive: {
+      type: Boolean,
+      default: true,
     },
 
     city: {

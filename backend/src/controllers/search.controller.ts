@@ -51,7 +51,12 @@ export const globalSearch = async (req: AuthRequest, res: Response) => {
     let shopIds: string[] | undefined;
 
     if (city) {
-      const cityShops = await Shop.find(cityCondition).select("_id").lean();
+      const cityShops = await Shop.find({
+        ...cityCondition,
+        isActive: { $ne: false },
+      })
+        .select("_id")
+        .lean();
 
       shopIds = cityShops.map((shop) => shop._id.toString());
     }
@@ -59,7 +64,11 @@ export const globalSearch = async (req: AuthRequest, res: Response) => {
     // Search shops and items at the same time.
     const [shops, items] = await Promise.all([
       // Only the fields needed to render a shop result card.
-      Shop.find({ name: nameRegex, ...cityCondition })
+      Shop.find({
+        name: nameRegex,
+        ...cityCondition,
+        isActive: { $ne: false },
+      })
         .select("name image city address")
         .lean(),
 
@@ -68,15 +77,21 @@ export const globalSearch = async (req: AuthRequest, res: Response) => {
         ...(shopIds && { shop: { $in: shopIds } }),
       })
         .select("name description price image")
-        .populate("shop", "name image city address")
+        .populate({
+          path: "shop",
+          select: "name image city address",
+          match: { isActive: { $ne: false } },
+        })
         .lean(),
     ]);
 
     // Return both result types in one response.
+    // Items whose shop is inactive are dropped: the populate match above
+    // left their shop field null.
     return res.status(200).json({
       success: true,
       shops,
-      items,
+      items: items.filter((item) => item.shop),
     });
   } catch (error) {
     console.error("globalSearch:", error);

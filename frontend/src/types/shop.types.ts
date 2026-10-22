@@ -10,6 +10,7 @@ export interface IShop {
     publicId: string;
   };
   owner: string;
+  isActive?: boolean;
   
   createdAt: string;
   updatedAt: string;

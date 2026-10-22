@@ -36,6 +36,14 @@ export const addItem = async (req: AuthRequest, res: Response) => {
       });
     }
 
+    // reject new items on a deactivated shop
+    if (shop.isActive === false) {
+      return res.status(409).json({
+        success: false,
+        message: "Cannot add items to an inactive shop",
+      });
+    }
+
     // upload image to cloudinary if there is
 
     let image;
@@ -275,9 +283,10 @@ export const getItemsByCity = async (req: AuthRequest, res: Response) => {
       });
     }
 
-    // Find shops in the requested city
+    // Find active shops in the requested city
     const shops = await Shop.find({
       city: city.trim(),
+      isActive: { $ne: false },
     }).select("_id");
 
     const shopIds = shops.map((shop) => shop._id);

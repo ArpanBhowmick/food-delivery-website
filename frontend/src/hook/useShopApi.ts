@@ -15,6 +15,13 @@ export const useShopApi = () => {
     return response.data;
   };
 
+
+  // delete shop
+  const deleteShop = async (shopId: string) => {
+    const response = await axiosPrivate.delete(`/shop/${shopId}`);
+    return response.data;
+  };
+
   // get all owner shops
   const getOwnerShops = async () => {
     const response = await axiosPrivate.get("/shop/owner");
@@ -52,5 +59,6 @@ export const useShopApi = () => {
     getShopById,
     getPublicShopById,
     getShopsByCity,
+    deleteShop,
   };
 };

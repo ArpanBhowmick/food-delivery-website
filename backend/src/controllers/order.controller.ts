@@ -164,20 +164,28 @@ export const createOrder = async (req: AuthRequest, res: Response) => {
       }
     }
 
-    // Confirm that all item shops still exist.
+    // Confirm that all item shops still exist and are accepting orders.
     const shopIds = [...new Set(items.map((item) => item.shop.toString()))];
     const shops = await Shop.find({
       _id: { $in: shopIds },
-    }).select("_id owner");
-    const existingShopIds = new Set(shops.map((shop) => shop._id.toString()));
+    }).select("_id owner isActive");
 
     const shopById = new Map(shops.map((shop) => [shop._id.toString(), shop]));
 
     for (const shopId of shopIds) {
-      if (!existingShopIds.has(shopId)) {
+      const shop = shopById.get(shopId);
+
+      if (!shop) {
         return res.status(404).json({
           success: false,
           message: `Shop not found: ${shopId}`,
+        });
+      }
+
+      if (shop.isActive === false) {
+        return res.status(409).json({
+          success: false,
+          message: `Shop is not accepting orders: ${shopId}`,
         });
       }
     }
