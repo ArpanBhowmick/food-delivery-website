@@ -58,7 +58,7 @@ const PopularDishCard = ({
   }, [city]);
 
   return (
-    <div>
+    <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div className="mb-4 flex items-center justify-between">
         <h2 className="text-xl font-bold">Popular Dishes</h2>
         <button className="flex cursor-pointer items-center gap-1 rounded-full bg-purple-100/50 px-4 py-1.5 text-sm font-medium text-[#7e22ce] transition hover:bg-purple-100">

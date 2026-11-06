@@ -73,40 +73,39 @@ export default function UserNavbar() {
   }, [dropdownOpen]);
 
   const handleSearch = useCallback(
-  async (value: string) => {
-    if (!value.trim()) {
+    async (value: string) => {
+      if (!value.trim()) {
+        setSearchResults({ shops: [], items: [] });
+        return;
+      }
+
+      try {
+        const results = await search(value.trim());
+
+        setSearchResults({
+          shops: results.shops,
+          items: results.items,
+        });
+      } catch (error) {
+        console.error("Search failed:", error);
+      }
+    },
+    [search],
+  );
+
+  // debouncing for search
+  useEffect(() => {
+    if (!searchQuery.trim()) {
       setSearchResults({ shops: [], items: [] });
       return;
     }
 
-    try {
-      const results = await search(value.trim());
+    const timer = setTimeout(() => {
+      handleSearch(searchQuery);
+    }, 400);
 
-      setSearchResults({
-        shops: results.shops,
-        items: results.items,
-      });
-    } catch (error) {
-      console.error("Search failed:", error);
-    }
-  },
-  [search],
-);
-
-
-  // debouncing for search 
-  useEffect(() => {
-  if (!searchQuery.trim()) {
-    setSearchResults({ shops: [], items: [] });
-    return;
-  }
-
-  const timer = setTimeout(() => {
-    handleSearch(searchQuery);
-  }, 400);
-
-  return () => clearTimeout(timer);
-}, [searchQuery, handleSearch]);
+    return () => clearTimeout(timer);
+  }, [searchQuery, handleSearch]);
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border bg-background">
@@ -302,36 +301,34 @@ export default function UserNavbar() {
         </div>
       )}
       {/* Location modal */}
-      {locationOpen && (
-        <AddressModal onClose={() => setLocationOpen(false)} />
-      )}
+      {locationOpen && <AddressModal onClose={() => setLocationOpen(false)} />}
 
       <header>
         <CartDrawer
           open={cartOpen}
           onOpenChange={setCartOpen}
           onCheckout={() => {
-  setCartOpen(false);
-  setCheckoutOpen(true);
-}}
+            setCartOpen(false);
+            setCheckoutOpen(true);
+          }}
           cartItems={cartItems}
           itemTotal={itemTotal}
           deliveryFee={deliveryFee}
         />
 
         <CheckoutDrawer
-  isCheckoutOpen={checkoutOpen}
-  onOpenChange={setCheckoutOpen}
-  onBack={() => {
-    setCheckoutOpen(false);
-    setCartOpen(true);
-  }}
-  cartItems={cartItems}
-  itemTotal={itemTotal}
-  deliveryFee={deliveryFee}
-  onCloseCart={() => setCartOpen(false)}
-  onOpenCart={() => setCartOpen(true)}
-/>
+          isCheckoutOpen={checkoutOpen}
+          onOpenChange={setCheckoutOpen}
+          onBack={() => {
+            setCheckoutOpen(false);
+            setCartOpen(true);
+          }}
+          cartItems={cartItems}
+          itemTotal={itemTotal}
+          deliveryFee={deliveryFee}
+          onCloseCart={() => setCartOpen(false)}
+          onOpenCart={() => setCartOpen(true)}
+        />
       </header>
     </header>
   );
